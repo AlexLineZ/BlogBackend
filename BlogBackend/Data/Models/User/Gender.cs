@@ -1,4 +1,4 @@
-﻿namespace BlogBackend.Models;
+﻿namespace BlogBackend.Data.Models.User;
 
 public enum Gender
 {

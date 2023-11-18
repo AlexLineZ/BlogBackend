@@ -1,7 +1,5 @@
 ﻿using BlogBackend.Models;
-using BlogBackend.Services.Implementations;
 using BlogBackend.Services.Interfaces;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BlogBackend.Controllers;
