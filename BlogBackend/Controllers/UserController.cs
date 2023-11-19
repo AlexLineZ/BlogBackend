@@ -1,4 +1,5 @@
-﻿using BlogBackend.Models;
+﻿using BlogBackend.Data.Models.User;
+using BlogBackend.Models;
 using BlogBackend.Models.Info;
 using BlogBackend.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -33,16 +34,16 @@ public class UserController : ControllerBase
             return await _userService.Register(model);
         }
         
-        catch (InvalidOperationException ex)
+        catch (InvalidOperationException e)
         {
             return BadRequest(new MessageResponse
             {
                 Status = "Error",
-                Message = ex.Message
+                Message = e.Message
             });
         }
         
-        catch (Exception ex)
+        catch (Exception e)
         {
             return StatusCode(500, new MessageResponse
             {
@@ -51,8 +52,10 @@ public class UserController : ControllerBase
             });
         }
     }
-/*
-    public IActionResult Login([FromBody] LoginCredentials model)
+    
+    [HttpPost]
+    [Route("login")]
+    public async Task<IActionResult> Login([FromBody] LoginCredentials model)
     {
         if (!ModelState.IsValid)
         {
@@ -65,14 +68,26 @@ public class UserController : ControllerBase
 
         try
         {
-            
+            return await _userService.Login(model);
         }
+        
+        catch (InvalidOperationException e)
+        {
+            return StatusCode(400, new MessageResponse
+            {
+                Status = "Error",
+                Message = "Invalid login or password"
+            });
+        }
+        
         catch (Exception e)
         {
-            Console.WriteLine(e);
-            throw;
+            return StatusCode(500, new MessageResponse
+            {
+                Status = "Error",
+                Message = e.Message
+            });
         }
         
     }
-    */
 }

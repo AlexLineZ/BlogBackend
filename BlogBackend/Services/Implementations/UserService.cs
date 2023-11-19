@@ -1,7 +1,6 @@
 ﻿using BlogBackend.Data;
 using BlogBackend.Helpers;
 using BlogBackend.Models;
-using BlogBackend.Data.Models.User;
 using BlogBackend.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -43,18 +42,27 @@ public class UserService: IUserService
         await _dbContext.Users.AddAsync(user);
         await _dbContext.SaveChangesAsync();
 
-        return new OkObjectResult(new { Message = "Registration successful." });
+        return new OkObjectResult(new
+        {
+            token = token
+        });
     }
 
-    public TokenResponse Login([FromBody] LoginCredentials model)
+    public async Task<IActionResult> Login([FromBody] LoginCredentials model)
     {
         var user = _dbContext.Users.FirstOrDefault(x =>
-            x.Email == model.Email && x.Password == model.Password);
-        
-        if (user == null) return null;
+            x.Email == model.Email && x.Password == UserHelper.GenerateSHA256(model.Password));
 
-        var tokenResponse = new TokenResponse(_configuration.GenerateJwtToken(user));
+        if (user == null)
+        {
+            throw new InvalidOperationException("This user is not registered");
+        }
 
-        return tokenResponse;
+        var token = _configuration.GenerateJwtToken(user);
+
+        return new OkObjectResult(new
+        {
+            token = token
+        });
     }
 }
