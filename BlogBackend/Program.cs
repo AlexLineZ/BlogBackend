@@ -46,6 +46,7 @@ builder.Services.AddAuthorization(options => options.DefaultPolicy =
 
 
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ITokenService, TokenService>();
 
 var app = builder.Build();
 

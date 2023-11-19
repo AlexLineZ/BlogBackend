@@ -6,6 +6,6 @@ namespace BlogBackend.Services.Interfaces;
 
 public interface IUserService
 {
-    Task<IActionResult> Register([FromBody] UserRegisterModel model);
-    Task<IActionResult> Login([FromBody] LoginCredentials model);
+    Task<TokenResponse> Register([FromBody] UserRegisterModel model);
+    Task<TokenResponse> Login([FromBody] LoginCredentials model);
 }

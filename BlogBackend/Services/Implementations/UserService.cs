@@ -1,4 +1,5 @@
 ﻿using BlogBackend.Data;
+using BlogBackend.Data.Models.User;
 using BlogBackend.Helpers;
 using BlogBackend.Models;
 using BlogBackend.Services.Interfaces;
@@ -10,14 +11,16 @@ public class UserService: IUserService
 {
     private readonly AppDbContext _dbContext;
     private readonly IConfiguration _configuration;
+    private readonly ITokenService _tokenService;
     
-    public UserService(AppDbContext dbContext, IConfiguration configuration)
+    public UserService(AppDbContext dbContext, IConfiguration configuration, ITokenService tokenService)
     {
         _dbContext = dbContext;
         _configuration = configuration;
+        _tokenService = tokenService;
     }
 
-    public async Task<IActionResult> Register([FromBody] UserRegisterModel model)
+    public async Task<TokenResponse> Register([FromBody] UserRegisterModel model)
     {
         var isUserRegistered = _dbContext.Users.FirstOrDefault(x =>
             x.Email == model.Email);
@@ -38,17 +41,15 @@ public class UserService: IUserService
         );
         
         var token = _configuration.GenerateJwtToken(user);
-
+        
         await _dbContext.Users.AddAsync(user);
+        await _tokenService.AddOrEditToken(token, user);
         await _dbContext.SaveChangesAsync();
 
-        return new OkObjectResult(new
-        {
-            token = token
-        });
+        return new TokenResponse(token);
     }
 
-    public async Task<IActionResult> Login([FromBody] LoginCredentials model)
+    public async Task<TokenResponse> Login([FromBody] LoginCredentials model)
     {
         var user = _dbContext.Users.FirstOrDefault(x =>
             x.Email == model.Email && x.Password == UserHelper.GenerateSHA256(model.Password));
@@ -59,10 +60,8 @@ public class UserService: IUserService
         }
 
         var token = _configuration.GenerateJwtToken(user);
-
-        return new OkObjectResult(new
-        {
-            token = token
-        });
+        await _tokenService.AddOrEditToken(token, user);
+        
+        return new TokenResponse(token);
     }
 }

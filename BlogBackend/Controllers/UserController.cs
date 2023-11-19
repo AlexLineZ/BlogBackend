@@ -31,7 +31,11 @@ public class UserController : ControllerBase
 
         try
         {
-            return await _userService.Register(model);
+            var response = await _userService.Register(model);
+            return Ok(new
+            {
+                token = response.Token
+            });
         }
         
         catch (InvalidOperationException e)
@@ -68,7 +72,12 @@ public class UserController : ControllerBase
 
         try
         {
-            return await _userService.Login(model);
+            var response = await _userService.Login(model);
+            return Ok(new
+            {
+                token = response.Token
+            });
+
         }
         
         catch (InvalidOperationException e)
