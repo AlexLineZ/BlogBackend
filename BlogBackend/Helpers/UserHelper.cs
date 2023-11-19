@@ -12,7 +12,7 @@ public static class UserHelper
     public static string GenerateJwtToken(this IConfiguration configuration, User user)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.ASCII.GetBytes(configuration["Secret"]);
+        var key = Encoding.ASCII.GetBytes(configuration["Jwt:Secret"]!);
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(new[] { new Claim("id", user.Id.ToString()) }),

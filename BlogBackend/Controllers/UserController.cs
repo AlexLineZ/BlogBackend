@@ -17,20 +17,20 @@ public class UserController : ControllerBase
     }
 
     [HttpPost("register")]
-    public IActionResult Register([FromBody] UserRegisterModel model)
+    public async Task<IActionResult> Register([FromBody] UserRegisterModel model)
     {
         if (!ModelState.IsValid)
         {
             return BadRequest(new MessageResponse
             {
                 Status = "Error",
-                Message = "User model is invalid."
+                Message = "User model is invalid"
             });
         }
 
         try
         {
-            return _userService.Register(model);
+            return await _userService.Register(model);
         }
         
         catch (InvalidOperationException ex)
@@ -51,4 +51,28 @@ public class UserController : ControllerBase
             });
         }
     }
+/*
+    public IActionResult Login([FromBody] LoginCredentials model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(new MessageResponse
+            {
+                Status = "Error",
+                Message = "User model is invalid"
+            });
+        }
+
+        try
+        {
+            
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+        
+    }
+    */
 }
