@@ -1,5 +1,6 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using BlogBackend.Models;
 using Microsoft.IdentityModel.Tokens;
@@ -21,5 +22,11 @@ public static class UserHelper
         };
         var token = tokenHandler.CreateToken(tokenDescriptor);
         return tokenHandler.WriteToken(token);
+    }
+    
+    public static string GenerateSHA256(string input)
+    {
+        using SHA256 hash = SHA256.Create();
+        return Convert.ToHexString(hash.ComputeHash(Encoding.UTF8.GetBytes(input)));
     }
 }

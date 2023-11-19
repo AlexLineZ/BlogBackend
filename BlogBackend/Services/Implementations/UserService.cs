@@ -19,6 +19,29 @@ public class UserService: IUserService
 
     public IActionResult Register([FromBody] UserRegisterModel model)
     {
+        var isUserRegistered = _dbContext.Users.FirstOrDefault(x =>
+            x.Email == model.Email);
+
+        if (isUserRegistered != null)
+        {
+            throw new InvalidOperationException("This Email already registered");
+        }
+        
+        var user = new User(
+            new Guid(),
+            model.FullName,
+            model.BirthDate,
+            model.Gender,
+            model.Email,
+            model.PhoneNumber,
+            UserHelper.GenerateSHA256(model.Password)
+        );
+        
+        //var token = _configuration.GenerateJwtToken(user);
+
+        _dbContext.Users.Add(user);
+        _dbContext.SaveChanges();
+
         return new OkObjectResult(new { Message = "Registration successful." });
     }
 
