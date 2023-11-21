@@ -1,4 +1,5 @@
 ﻿using System.Security.Authentication;
+using BlogBackend.Data.Models.User;
 using BlogBackend.Models;
 using BlogBackend.Models.Info;
 using BlogBackend.Services.Interfaces;
@@ -22,11 +23,7 @@ public class UserController : ControllerBase
     {
         if (!ModelState.IsValid)
         {
-            return BadRequest(new MessageResponse
-            {
-                Status = "Error",
-                Message = "User model is invalid"
-            });
+            return BadRequest();
         }
 
         try
@@ -63,11 +60,7 @@ public class UserController : ControllerBase
     {
         if (!ModelState.IsValid)
         {
-            return BadRequest(new MessageResponse
-            {
-                Status = "Error",
-                Message = "User model is invalid"
-            });
+            return BadRequest();
         }
 
         try
@@ -82,11 +75,7 @@ public class UserController : ControllerBase
         
         catch (InvalidOperationException e)
         {
-            return StatusCode(400, new MessageResponse
-            {
-                Status = "Error",
-                Message = "Invalid login or password"
-            });
+            return BadRequest();
         }
         
         catch (Exception e)
@@ -129,7 +118,36 @@ public class UserController : ControllerBase
         }
         catch (InvalidCredentialException)
         {
-            return StatusCode(401);
+            return Unauthorized();
+        }
+        catch (Exception e)
+        {
+            return StatusCode(500, new MessageResponse
+            {
+                Status = "Error",
+                Message = e.Message
+            });
+        }
+    }
+    
+    [HttpPut]
+    [Route("profile")]
+    public async Task<IActionResult> PutProfile(UserEditModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest();
+        }
+
+
+        try
+        {
+            var token = Request.Headers["Authorization"].ToString().Substring(7);
+            return await _userService.PutProfile(model, token);
+        }
+        catch (InvalidDataException)
+        {
+            return Unauthorized();
         }
         catch (Exception e)
         {

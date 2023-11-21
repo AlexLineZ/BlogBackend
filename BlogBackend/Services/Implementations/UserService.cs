@@ -107,4 +107,36 @@ public class UserService: IUserService
 
         return userDTO;
     }
+
+    public async Task<IActionResult> PutProfile(UserEditModel model, String token)
+    {
+        var findToken = _dbContext.Tokens.FirstOrDefault(x =>
+            token == x.Token);
+        
+        if (findToken != null)
+        {
+            if (_tokenService.IsTokenFresh(findToken) == false)
+            {
+                throw new InvalidCredentialException("Token expired");
+            }
+        }
+        
+        var user = _dbContext.Users.FirstOrDefault(x =>
+            findToken.UserId == x.Id);
+
+        if (user == null)
+        {
+            throw new InvalidDataException("Not authorized");
+        }
+        else
+        {
+            user.FullName = model.FullName;
+            user.Email = model.Email;
+            user.BirthDate = model.BirthDate;
+            user.Gender = model.Gender;
+            user.PhoneNumber = model.PhoneNumber;
+        }
+        await _dbContext.SaveChangesAsync();
+        return new OkResult();
+    }
 }

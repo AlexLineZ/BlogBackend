@@ -11,4 +11,5 @@ public interface IUserService
     Task<TokenResponse> Login([FromBody] LoginCredentials model);
     Task<IActionResult> Logout(String token);
     UserDTO GetProfile(String token);
+    Task<IActionResult> PutProfile(UserEditModel model, String token);
 }
