@@ -29,7 +29,7 @@ public class UserService: IUserService
 
         if (isUserRegistered != null)
         {
-            throw new InvalidOperationException("This Email already registered");
+            throw new InvalidCredentialException("This Email already registered");
         }
         
         var user = new User(
@@ -58,7 +58,7 @@ public class UserService: IUserService
 
         if (user == null)
         {
-            throw new InvalidOperationException("Incorrect login or password");
+            throw new InvalidCredentialException("Incorrect login or password");
         }
 
         var token = _configuration.GenerateJwtToken(user);
@@ -90,7 +90,7 @@ public class UserService: IUserService
         {
             if (_tokenService.IsTokenFresh(findToken) == false)
             {
-                throw new InvalidCredentialException("Token expired");
+                throw new InvalidOperationException("Token expired");
             }
         }
 
@@ -99,7 +99,7 @@ public class UserService: IUserService
 
         if (user == null)
         {
-            throw new InvalidCredentialException("Not authorized");
+            throw new InvalidOperationException("Not authorized");
         }
         
         var userDTO = new UserDTO(user.Id, user.CreateTime, user.FullName,
@@ -117,7 +117,7 @@ public class UserService: IUserService
         {
             if (_tokenService.IsTokenFresh(findToken) == false)
             {
-                throw new InvalidCredentialException("Token expired");
+                throw new InvalidOperationException("Token expired");
             }
         }
         
@@ -126,7 +126,7 @@ public class UserService: IUserService
 
         if (user == null)
         {
-            throw new InvalidDataException("Not authorized");
+            throw new InvalidOperationException("Not authorized");
         }
         else
         {

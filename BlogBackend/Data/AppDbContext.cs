@@ -9,6 +9,7 @@ public class AppDbContext: DbContext
     
     public DbSet<User> Users { get; set; }
     public DbSet<TokenStorage> Tokens { get; set; }
+    public DbSet<Community> Communities { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

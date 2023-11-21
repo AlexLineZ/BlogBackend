@@ -1,5 +1,6 @@
 using System.Text;
 using BlogBackend.Data;
+using BlogBackend.MiddleWares;
 using BlogBackend.Services.Implementations;
 using BlogBackend.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -75,6 +76,7 @@ builder.Services.AddSwaggerGen(option =>
 
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<ICommunityService, CommunityService>();
 
 var app = builder.Build();
 
@@ -84,6 +86,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseCustomExceptionHandler();
 
 app.UseHttpsRedirection();
 

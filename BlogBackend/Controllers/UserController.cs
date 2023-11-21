@@ -1,7 +1,6 @@
-﻿using System.Security.Authentication;
+﻿
 using BlogBackend.Data.Models.User;
 using BlogBackend.Models;
-using BlogBackend.Models.Info;
 using BlogBackend.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -26,32 +25,8 @@ public class UserController : ControllerBase
             return BadRequest();
         }
 
-        try
-        {
-            var response = await _userService.Register(model);
-            return Ok(new
-            {
-                token = response.Token
-            });
-        }
-        
-        catch (InvalidOperationException e)
-        {
-            return BadRequest(new MessageResponse
-            {
-                Status = "Error",
-                Message = e.Message
-            });
-        }
-        
-        catch (Exception e)
-        {
-            return StatusCode(500, new MessageResponse
-            {
-                Status = "Error",
-                Message = "Something went wrong"
-            });
-        }
+        var response = await _userService.Register(model);
+        return Ok(new { token = response.Token });
     }
     
     [HttpPost]
@@ -62,72 +37,25 @@ public class UserController : ControllerBase
         {
             return BadRequest();
         }
-
-        try
-        {
-            var response = await _userService.Login(model);
-            return Ok(new
-            {
-                token = response.Token
-            });
-
-        }
         
-        catch (InvalidOperationException e)
-        {
-            return BadRequest();
-        }
-        
-        catch (Exception e)
-        {
-            return StatusCode(500, new MessageResponse
-            {
-                Status = "Error",
-                Message = e.Message
-            });
-        }
+        var response = await _userService.Login(model);
+        return Ok(new { token = response.Token });
     }
 
     [HttpPost]
     [Route("logout")]
     public async Task<IActionResult> Logout()
     {
-        try
-        {
-            var token = Request.Headers["Authorization"].ToString().Substring(7);
-            return await _userService.Logout(token);
-        }
-        catch (Exception e)
-        {
-            return StatusCode(500, new MessageResponse
-            {
-                Status = "Error",
-                Message = e.Message
-            });
-        }
+        var token = Request.Headers["Authorization"].ToString().Substring(7);
+        return await _userService.Logout(token);
     }
 
     [HttpGet]
     [Route("profile")]
     public IActionResult GetProfile()
     {
-        try
-        {
-            var token = Request.Headers["Authorization"].ToString().Substring(7);
-            return Ok(_userService.GetProfile(token));
-        }
-        catch (InvalidCredentialException)
-        {
-            return Unauthorized();
-        }
-        catch (Exception e)
-        {
-            return StatusCode(500, new MessageResponse
-            {
-                Status = "Error",
-                Message = e.Message
-            });
-        }
+        var token = Request.Headers["Authorization"].ToString().Substring(7);
+        return Ok(_userService.GetProfile(token));
     }
     
     [HttpPut]
@@ -138,24 +66,8 @@ public class UserController : ControllerBase
         {
             return BadRequest();
         }
-
-
-        try
-        {
-            var token = Request.Headers["Authorization"].ToString().Substring(7);
-            return await _userService.PutProfile(model, token);
-        }
-        catch (InvalidDataException)
-        {
-            return Unauthorized();
-        }
-        catch (Exception e)
-        {
-            return StatusCode(500, new MessageResponse
-            {
-                Status = "Error",
-                Message = e.Message
-            });
-        }
+        
+        var token = Request.Headers["Authorization"].ToString().Substring(7);
+        return await _userService.PutProfile(model, token);
     }
 }
