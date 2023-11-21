@@ -30,6 +30,7 @@ namespace BlogBackend.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreateTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     FullName = table.Column<string>(type: "text", nullable: false),
                     BirthDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     Gender = table.Column<int>(type: "integer", nullable: false),

@@ -1,4 +1,4 @@
-﻿using BlogBackend.Data.Models.User;
+﻿using System.Security.Authentication;
 using BlogBackend.Models;
 using BlogBackend.Models.Info;
 using BlogBackend.Services.Interfaces;
@@ -97,6 +97,47 @@ public class UserController : ControllerBase
                 Message = e.Message
             });
         }
-        
+    }
+
+    [HttpPost]
+    [Route("logout")]
+    public async Task<IActionResult> Logout()
+    {
+        try
+        {
+            var token = Request.Headers["Authorization"].ToString().Substring(7);
+            return await _userService.Logout(token);
+        }
+        catch (Exception e)
+        {
+            return StatusCode(500, new MessageResponse
+            {
+                Status = "Error",
+                Message = e.Message
+            });
+        }
+    }
+
+    [HttpGet]
+    [Route("profile")]
+    public IActionResult GetProfile()
+    {
+        try
+        {
+            var token = Request.Headers["Authorization"].ToString().Substring(7);
+            return Ok(_userService.GetProfile(token));
+        }
+        catch (InvalidCredentialException)
+        {
+            return StatusCode(401);
+        }
+        catch (Exception e)
+        {
+            return StatusCode(500, new MessageResponse
+            {
+                Status = "Error",
+                Message = e.Message
+            });
+        }
     }
 }

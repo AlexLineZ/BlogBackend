@@ -33,6 +33,6 @@ public class TokenService : ITokenService
 
     public Boolean IsTokenFresh(TokenStorage tokenData)
     {
-        return tokenData.ExpirationDate <= DateTime.UtcNow;
+        return DateTime.UtcNow <= tokenData.ExpirationDate;
     }
 }

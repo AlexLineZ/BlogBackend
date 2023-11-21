@@ -1,7 +1,9 @@
-﻿using BlogBackend.Data;
+﻿using System.Security.Authentication;
+using BlogBackend.Data;
 using BlogBackend.Data.Models.User;
 using BlogBackend.Helpers;
 using BlogBackend.Models;
+using BlogBackend.Models.DTO;
 using BlogBackend.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -56,12 +58,53 @@ public class UserService: IUserService
 
         if (user == null)
         {
-            throw new InvalidOperationException("This user is not registered");
+            throw new InvalidOperationException("Incorrect login or password");
         }
 
         var token = _configuration.GenerateJwtToken(user);
         await _tokenService.AddOrEditToken(token, user);
         
         return new TokenResponse(token);
+    }
+
+    public async Task<IActionResult> Logout(String token)
+    {
+        var findToken = _dbContext.Tokens.FirstOrDefault(x =>
+            x.Token == token);
+        if (findToken == null)
+        {
+            throw new InvalidOperationException("Token not found");
+        }
+        _dbContext.Tokens.Remove(findToken);
+        await _dbContext.SaveChangesAsync();
+
+        return new OkResult();
+    }
+
+    public UserDTO GetProfile(String token)
+    {
+        var findToken = _dbContext.Tokens.FirstOrDefault(x =>
+            token == x.Token);
+        
+        if (findToken != null)
+        {
+            if (_tokenService.IsTokenFresh(findToken) == false)
+            {
+                throw new InvalidCredentialException("Token expired");
+            }
+        }
+
+        var user = _dbContext.Users.FirstOrDefault(x =>
+            findToken.UserId == x.Id);
+
+        if (user == null)
+        {
+            throw new InvalidCredentialException("Not authorized");
+        }
+        
+        var userDTO = new UserDTO(user.Id, user.CreateTime, user.FullName,
+            user.BirthDate, user.Gender, user.Email, user.PhoneNumber);
+
+        return userDTO;
     }
 }

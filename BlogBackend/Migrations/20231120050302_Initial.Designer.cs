@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BlogBackend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20231119155235_Initial")]
+    [Migration("20231120050302_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -53,6 +53,9 @@ namespace BlogBackend.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<DateTime?>("BirthDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("CreateTime")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Email")

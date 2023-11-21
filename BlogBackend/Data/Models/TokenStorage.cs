@@ -14,7 +14,6 @@ public class TokenStorage
     public DateTime ExpirationDate { get; set; }
     
     public TokenStorage() {}
-
     public TokenStorage(Guid id, Guid userId, String token, DateTime expirationDate)
     {
         Id = id;
