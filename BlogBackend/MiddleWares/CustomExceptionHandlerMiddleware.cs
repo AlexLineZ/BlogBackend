@@ -34,9 +34,19 @@ public class CustomExceptionHandlerMiddleware
         {
             case InvalidCredentialException:
                 code = HttpStatusCode.BadRequest;
+                result = JsonSerializer.Serialize(new MessageResponse
+                {
+                    Status = "Error",
+                    Message = e.Message
+                });
                 break;
             case InvalidOperationException:
                 code = HttpStatusCode.Unauthorized;
+                result = JsonSerializer.Serialize(new MessageResponse
+                {
+                    Status = "Error",
+                    Message = e.Message
+                });
                 break;
             default:
                 code = HttpStatusCode.InternalServerError;

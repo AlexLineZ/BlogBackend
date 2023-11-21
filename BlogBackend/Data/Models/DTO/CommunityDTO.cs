@@ -1,10 +1,8 @@
-﻿using System.Collections;
-using System.ComponentModel.DataAnnotations;
-using BlogBackend.Models.DTO;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace BlogBackend.Models;
+namespace BlogBackend.Models.DTO;
 
-public class Community
+public class CommunityDTO
 {
     [Key] 
     public Guid Id { get; set; }
@@ -13,7 +11,6 @@ public class Community
     public DateTime CreateTime { get; set; }
     
     [Required]
-    [MinLength(1)]
     public String Name { get; set; }
 
     public String Description { get; set; }
@@ -24,13 +21,10 @@ public class Community
     [Required]
     public Int32 SubscribersCount { get; set; }
     
-    [Required]
-    public List<CommunityUserDTO> CommunityUsers { get; set; }
-    
-    public Community() {}
+    public CommunityDTO() {}
 
-    public Community(Guid id, DateTime createTime, String name, String description, Boolean isClosed,
-        Int32 subscribersCount, List<CommunityUserDTO> communityUsers)
+    public CommunityDTO(Guid id, DateTime createTime, String name, String description, Boolean isClosed,
+        Int32 subscribersCount)
     {
         Id = id;
         CreateTime = createTime;
@@ -38,6 +32,5 @@ public class Community
         Description = description;
         IsClosed = isClosed;
         SubscribersCount = subscribersCount;
-        CommunityUsers = communityUsers;
     }
 }
