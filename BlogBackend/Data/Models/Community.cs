@@ -25,12 +25,12 @@ public class Community
     public Int32 SubscribersCount { get; set; }
     
     [Required]
-    public List<CommunityUserDTO> CommunityUsers { get; set; }
+    public List<CommunityUser> CommunityUsers { get; set; }
     
     public Community() {}
 
     public Community(Guid id, DateTime createTime, String name, String description, Boolean isClosed,
-        Int32 subscribersCount, List<CommunityUserDTO> communityUsers)
+        Int32 subscribersCount, List<CommunityUser> communityUsers)
     {
         Id = id;
         CreateTime = createTime;

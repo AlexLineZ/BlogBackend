@@ -1,4 +1,5 @@
 ﻿using BlogBackend.Models;
+using BlogBackend.Models.DTO;
 using Microsoft.EntityFrameworkCore;
 
 namespace BlogBackend.Data;
