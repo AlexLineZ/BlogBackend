@@ -4,7 +4,7 @@ using BlogBackend.Data.Models.User;
 
 namespace BlogBackend.Models;
 
-public class TokenStorage
+public class TokenStorage //хранить только истеченные
 {
     [Key]
     public Guid Id { get; set; }

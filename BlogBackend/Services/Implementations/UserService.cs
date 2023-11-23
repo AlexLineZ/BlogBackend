@@ -22,7 +22,7 @@ public class UserService: IUserService
         _tokenService = tokenService;
     }
 
-    public async Task<TokenResponse> Register([FromBody] UserRegisterModel model)
+    public async Task<TokenResponse> Register([FromBody] UserRegisterModel model) //автомапперы
     {
         var isUserRegistered = _dbContext.Users.FirstOrDefault(x =>
             x.Email == model.Email);

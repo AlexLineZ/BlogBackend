@@ -52,7 +52,7 @@ public class UserController : ControllerBase
 
     [HttpGet]
     [Route("profile")]
-    public IActionResult GetProfile()
+    public IActionResult GetProfile() //поправить это!
     {
         var token = Request.Headers["Authorization"].ToString().Substring(7);
         return Ok(_userService.GetProfile(token));

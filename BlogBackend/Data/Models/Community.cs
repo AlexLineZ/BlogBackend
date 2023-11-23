@@ -4,7 +4,7 @@ using BlogBackend.Models.DTO;
 
 namespace BlogBackend.Models;
 
-public class Community
+public class Community //скаффолд контекста баз данных или database_first
 {
     [Key] 
     public Guid Id { get; set; }
