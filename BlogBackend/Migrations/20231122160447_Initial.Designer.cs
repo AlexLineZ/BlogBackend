@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BlogBackend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20231120050302_Initial")]
+    [Migration("20231122160447_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -24,6 +24,56 @@ namespace BlogBackend.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("BlogBackend.Models.Community", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreateTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsClosed")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("SubscribersCount")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Communities");
+                });
+
+            modelBuilder.Entity("BlogBackend.Models.CommunityUser", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CommunityId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Role")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CommunityId");
+
+                    b.ToTable("CommunityUser");
+                });
 
             modelBuilder.Entity("BlogBackend.Models.TokenStorage", b =>
                 {
@@ -82,6 +132,20 @@ namespace BlogBackend.Migrations
                     b.HasIndex("Id");
 
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("BlogBackend.Models.CommunityUser", b =>
+                {
+                    b.HasOne("BlogBackend.Models.Community", null)
+                        .WithMany("CommunityUsers")
+                        .HasForeignKey("CommunityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("BlogBackend.Models.Community", b =>
+                {
+                    b.Navigation("CommunityUsers");
                 });
 #pragma warning restore 612, 618
         }

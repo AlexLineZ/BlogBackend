@@ -1,6 +1,10 @@
-﻿using BlogBackend.Services.Interfaces;
+﻿using BlogBackend.Data;
+using BlogBackend.Models;
+using BlogBackend.Models.DTO;
+using BlogBackend.Services.Interfaces;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.OpenApi.Extensions;
 
 namespace BlogBackend.Controllers;
 
@@ -26,14 +30,17 @@ public class CommunityController: ControllerBase
     [Route("my")]
     public async Task<IActionResult> GetUserCommunityList()
     {
-        return Ok(new { test = "test" });
+        var token = Request.Headers["Authorization"].ToString().Substring(7);
+        var communityUserList = await _communityService.GetUserCommunity(token);
+        return Ok(communityUserList);
     }
 
     [HttpGet]
     [Route("{id}")]
     public async Task<IActionResult> GetCommunityInformation(Guid id)
     {
-        return Ok(new { test = "test" });
+        var communityInformation = await _communityService.GetCommunityById(id);
+        return Ok(communityInformation);
     }
 
     [HttpGet]
@@ -54,20 +61,26 @@ public class CommunityController: ControllerBase
     [Route("{id}/role")]
     public async Task<IActionResult> GetUserRole(Guid id)
     {
-        return Ok(new { test = "test" });
+        var token = Request.Headers["Authorization"].ToString().Substring(7);
+        var userRole = await _communityService.GetUserRole(id, token);
+        return Ok(userRole.GetDisplayName());
     }
     
     [HttpPost]
     [Route("{id}/subscribe")]
     public async Task<IActionResult> SubscribeCommunity(Guid id)
     {
-        return Ok(new { test = "test" });
+        var token = Request.Headers["Authorization"].ToString().Substring(7);
+        await _communityService.Subscribe(id, token);
+        return Ok();
     }
     
     [HttpDelete]
     [Route("{id}/unsubscribe")]
     public async Task<IActionResult> UnsubscribeCommunity(Guid id)
     {
-        return Ok(new { test = "test" });
+        var token = Request.Headers["Authorization"].ToString().Substring(7);
+        await _communityService.Unsubscribe(id, token);
+        return Ok();
     }
 }
