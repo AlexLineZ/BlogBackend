@@ -24,7 +24,7 @@ public class User
     [EmailAddress]
     public String Email { get; set; }
     
-    [RegularExpression("^\\+\\d{1,3} \\(\\d{3}\\) \\d{3}-\\d{2}-\\d{2}$")]
+    [RegularExpression("^\\+\\7 \\(\\d{3}\\) \\d{3}-\\d{2}-\\d{2}$")]
     public String PhoneNumber { get; set; }
     
     [Required]

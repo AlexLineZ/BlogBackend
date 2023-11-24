@@ -1,8 +1,4 @@
-﻿using BlogBackend.Data;
-using BlogBackend.Models;
-using BlogBackend.Models.DTO;
-using BlogBackend.Services.Interfaces;
-using Microsoft.AspNetCore.Http.HttpResults;
+﻿using BlogBackend.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Extensions;
 
