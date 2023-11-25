@@ -27,6 +27,7 @@ public class AddressController: ControllerBase
     [Route("chain")]
     public async Task<IActionResult> Chain(Guid objectGuid)
     {
-        return Ok(new { test = "test" });
+        var list = await _addressService.Chain(objectGuid);
+        return Ok(list);
     }
 }
