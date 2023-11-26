@@ -81,7 +81,7 @@ public class UserService: IUserService
         return new OkResult();
     }
 
-    public UserDTO GetProfile(String token)
+    public UserDto GetProfile(String token)
     {
         var findToken = _dbContext.Tokens.FirstOrDefault(x =>
             token == x.Token);
@@ -102,7 +102,7 @@ public class UserService: IUserService
             throw new InvalidOperationException("Not authorized");
         }
         
-        var userDTO = new UserDTO(user.Id, user.CreateTime, user.FullName,
+        var userDTO = new UserDto(user.Id, user.CreateTime, user.FullName,
             user.BirthDate, user.Gender, user.Email, user.PhoneNumber);
 
         return userDTO;

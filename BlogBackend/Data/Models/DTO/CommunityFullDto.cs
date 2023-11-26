@@ -2,7 +2,7 @@
 
 namespace BlogBackend.Models.DTO;
 
-public class CommunityFullDTO
+public class CommunityFullDto
 {
     [Key] 
     public Guid Id { get; set; }
@@ -22,12 +22,12 @@ public class CommunityFullDTO
     public Int32 SubscribersCount { get; set; }
     
     [Required]
-    public List<UserDTO> Administrators { get; set; }
+    public List<UserDto> Administrators { get; set; }
     
-    public CommunityFullDTO() {}
+    public CommunityFullDto() {}
 
-    public CommunityFullDTO(Guid id, DateTime createTime, String name, String description, Boolean isClosed,
-        Int32 subscribersCount, List<UserDTO> administrators)
+    public CommunityFullDto(Guid id, DateTime createTime, String name, String description, Boolean isClosed,
+        Int32 subscribersCount, List<UserDto> administrators)
     {
         Id = id;
         CreateTime = createTime;

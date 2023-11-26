@@ -3,7 +3,7 @@ using BlogBackend.Data.Models.User;
 
 namespace BlogBackend.Models.DTO;
 
-public class UserDTO
+public class UserDto
 {
     [Key]
     public Guid Id { get; set; }
@@ -17,8 +17,8 @@ public class UserDTO
     public String Email { get; set; }
     public String PhoneNumber { get; set; }
     
-    public UserDTO() {}
-    public UserDTO(Guid id, DateTime createTime, string fullName, 
+    public UserDto() {}
+    public UserDto(Guid id, DateTime createTime, string fullName, 
         DateTime? birthDate, Gender gender, string email, string phoneNumber)
     {
         Id = id;

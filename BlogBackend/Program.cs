@@ -79,6 +79,8 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<ICommunityService, CommunityService>();
 builder.Services.AddScoped<IAddressService, AddressService>();
+builder.Services.AddScoped<ITagService, TagService>();
+builder.Services.AddScoped<IPostService, PostService>();
 
 var app = builder.Build();
 

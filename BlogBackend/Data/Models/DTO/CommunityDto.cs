@@ -2,7 +2,7 @@
 
 namespace BlogBackend.Models.DTO;
 
-public class CommunityDTO
+public class CommunityDto
 {
     [Key] 
     public Guid Id { get; set; }
@@ -21,9 +21,9 @@ public class CommunityDTO
     [Required]
     public Int32 SubscribersCount { get; set; }
     
-    public CommunityDTO() {}
+    public CommunityDto() {}
 
-    public CommunityDTO(Guid id, DateTime createTime, String name, String description, Boolean isClosed,
+    public CommunityDto(Guid id, DateTime createTime, String name, String description, Boolean isClosed,
         Int32 subscribersCount)
     {
         Id = id;

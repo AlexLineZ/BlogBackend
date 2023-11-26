@@ -11,22 +11,20 @@ namespace BlogBackend.Services.Implementations;
 public class CommunityService : ICommunityService
 {
     private readonly AppDbContext _dbContext;
-    private readonly IConfiguration _configuration;
     private readonly ITokenService _tokenService;
     
-    public CommunityService(AppDbContext dbContext, IConfiguration configuration, ITokenService tokenService)
+    public CommunityService(AppDbContext dbContext, ITokenService tokenService)
     {
         _dbContext = dbContext;
-        _configuration = configuration;
         _tokenService = tokenService;
     }
 
-    public async Task<List<CommunityDTO>> GetCommunity()
+    public async Task<List<CommunityDto>> GetCommunity()
     {
         var communities = await _dbContext.Communities
             .ToListAsync();
         
-        var communityDTOs = communities.Select(c => new CommunityDTO
+        var communityDTOs = communities.Select(c => new CommunityDto
         {
             Id = c.Id,
             CreateTime = c.CreateTime,
@@ -39,14 +37,13 @@ public class CommunityService : ICommunityService
         return communityDTOs;
     }
 
-    public async Task<List<CommunityUserDTO>> GetUserCommunity(String token)
+    public async Task<List<CommunityUserDto>> GetUserCommunity(String token)
     {
         var user = await GetUser(token);
-        var userId = user.Id;
-        
+
         var communityUserDTOs = _dbContext.Communities
             .Where(c => c.CommunityUsers.Any(cu => cu.UserId == user.Id))
-            .Select(c => new CommunityUserDTO
+            .Select(c => new CommunityUserDto
             {
                 UserId = user.Id,
                 CommunityId = c.Id,
@@ -57,7 +54,7 @@ public class CommunityService : ICommunityService
         return communityUserDTOs;
     }
     
-    public async Task<CommunityFullDTO> GetCommunityById(Guid communityId)
+    public async Task<CommunityFullDto> GetCommunityById(Guid communityId)
     {
         var community = await _dbContext.Communities
             .Include(c => c.CommunityUsers)
@@ -74,7 +71,7 @@ public class CommunityService : ICommunityService
                 _dbContext.Users,
                 cu => cu.UserId,
                 user => user.Id,
-                (cu, user) => new UserDTO
+                (cu, user) => new UserDto
                 {
                     Id = user.Id,
                     CreateTime = user.CreateTime,
@@ -86,7 +83,7 @@ public class CommunityService : ICommunityService
                 }
             ).ToList();
         
-        var communityDTO = new CommunityFullDTO
+        var communityDTO = new CommunityFullDto
         {
             Id = community.Id,
             CreateTime = community.CreateTime,

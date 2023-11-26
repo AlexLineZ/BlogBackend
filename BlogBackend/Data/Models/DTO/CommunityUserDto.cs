@@ -2,7 +2,7 @@
 
 namespace BlogBackend.Models.DTO;
 
-public class CommunityUserDTO
+public class CommunityUserDto
 {
     [Key] 
     public Guid UserId { get; set; }
@@ -11,9 +11,9 @@ public class CommunityUserDTO
     [Required]
     public CommunityRole Role { get; set; }
     
-    public CommunityUserDTO() {}
+    public CommunityUserDto() {}
 
-    public CommunityUserDTO(Guid userId, Guid communityId, CommunityRole role)
+    public CommunityUserDto(Guid userId, Guid communityId, CommunityRole role)
     {
         UserId = userId;
         CommunityId = communityId;
