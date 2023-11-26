@@ -33,8 +33,10 @@ public class PostController: ControllerBase
         {
             return BadRequest(ModelState);
         }
-        
-        return Ok(new { test = "test" });
+
+        var pageList = await  _postService.GetPostList(tags, author, min, max,
+            sorting, onlyMyCommunities, page, size);
+        return Ok(pageList);
     }
 
     [HttpPost]

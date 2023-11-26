@@ -1,4 +1,5 @@
-﻿using BlogBackend.Services.Interfaces;
+﻿using BlogBackend.Models.DTO;
+using BlogBackend.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Extensions;
 
@@ -48,9 +49,11 @@ public class CommunityController: ControllerBase
 
     [HttpPost]
     [Route("{id}/post")]
-    public async Task<IActionResult> CreatePost(Guid id)
+    public async Task<IActionResult> CreatePost(Guid id, CreatePostDto post)
     {
-        return Ok(new { test = "test" });
+        var token = Request.Headers["Authorization"].ToString().Substring(7);
+        await _communityService.CreatePost(id, post, token);
+        return Ok();
     }
     
     [HttpGet]

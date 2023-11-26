@@ -97,6 +97,42 @@ public class CommunityService : ICommunityService
         return communityDTO;
     }
 
+    public async Task CreatePost(Guid communityId, CreatePostDto post, String token)
+    {
+        var user = await GetUser(token);
+        
+        var community = await _dbContext.Communities
+            .FirstOrDefaultAsync(c => communityId == c.Id);
+        
+        if (community == null)
+        {
+            throw new FileNotFoundException("Community is not found");
+        }
+        
+        var newPost = new Post {
+            Id = Guid.NewGuid(),
+            CreateTime = DateTime.UtcNow, 
+            Title = post.Title,
+            Description = post.Description,
+            ReadingTime = post.ReadingTime,
+            Image = post.Image,
+            AuthorId = user.Id,
+            Author = user.FullName,
+            CommunityId = community.Id,
+            CommunityName = community.Name,
+            AddressId = post.AddressId,
+            Likes = 0,
+            HasLike = false,
+            CommentsCount = 0,
+            Tags = await GetTagList(post.Tags)
+        };
+        
+        _dbContext.Posts.Add(newPost);
+        await _dbContext.SaveChangesAsync();
+    }
+    
+    
+
     public async Task<CommunityRole> GetUserRole(Guid communityId, String token)
     {
         var user = await GetUser(token);
@@ -200,5 +236,21 @@ public class CommunityService : ICommunityService
         }
 
         return user;
+    }
+    
+    private async Task<List<TagDto>> GetTagList(List<Guid> list)
+    {
+        var tagDtos = new List<TagDto>();
+        
+        foreach (var item in list)
+        {
+            var tag = await _dbContext.Tags.FirstOrDefaultAsync(t => t.Id == item);
+            if (tag != null)
+            {
+                tagDtos.Add(tag);
+            }
+        }
+
+        return tagDtos;
     }
 }

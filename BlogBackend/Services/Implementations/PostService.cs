@@ -1,6 +1,7 @@
 ﻿using BlogBackend.Data;
 using BlogBackend.Models;
 using BlogBackend.Models.DTO;
+using BlogBackend.Models.Posts;
 using BlogBackend.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,6 +18,52 @@ public class PostService: IPostService
         _tokenService = tokenService;
     }
 
+    public async Task<PostGroup> GetPostList(List<string>? tags, string? author, int? min, int? max,
+        PostSorting? sorting, bool onlyMyCommunities, int page, int size)
+    {
+        try
+        {
+            var allPosts = await _dbContext.Posts.ToListAsync();
+            
+            var filteredPosts = ApplyFilters(allPosts, tags, author, min, max, onlyMyCommunities);
+            
+            filteredPosts = ApplySorting(filteredPosts, sorting);
+            
+            var paginatedPosts = Paginate(filteredPosts, page, size);
+            
+            var postGroup = new PostGroup
+            {
+                Posts = paginatedPosts.Select(post => new PostDto
+                {
+                    Id = post.Id,
+                    CreateTime = post.CreateTime,
+                    Title = post.Title,
+                    Description = post.Description,
+                    ReadingTime = post.ReadingTime,
+                    Image = post.Image,
+                    AuthorId = post.AuthorId,
+                    Author = post.Author,
+                    CommunityId = post.CommunityId,
+                    CommunityName = post.CommunityName,
+                    AddressId = post.AddressId,
+                    Likes = post.Likes,
+                    HasLike = post.HasLike,
+                    CommentsCount = post.CommentsCount,
+                    Tags = new List<TagDto>()
+                }).ToList(),
+                
+                Pagination = new PageInfoModel { Count = size, Size = filteredPosts.Count(), Current = page},
+            };
+            
+            return postGroup;
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException($"Error retrieving posts: {ex.Message}");
+        }
+    }
+
+    
     public async Task CreatePost(CreatePostDto post, String token)
     {
         var user = await GetUser(token);
@@ -80,5 +127,55 @@ public class PostService: IPostService
         }
 
         return user;
+    }
+    
+    private IQueryable<Post> ApplyFilters(List<Post> posts, List<string>? tags, string? author,
+        int? minReadingTime, int? maxReadingTime, bool onlyMyCommunities)
+    {
+        var filteredPosts = posts.AsQueryable();
+        
+        if (tags != null && tags.Any())
+        {
+            filteredPosts = filteredPosts.Where(p => p.Tags.Any(t => tags.Contains(t.Name)));
+        }
+        
+        if (!string.IsNullOrEmpty(author))
+        {
+            filteredPosts = filteredPosts.Where(p => p.Author == author);
+        }
+        
+        if (minReadingTime.HasValue)
+        {
+            filteredPosts = filteredPosts.Where(p => p.ReadingTime >= minReadingTime.Value);
+        }
+
+        if (maxReadingTime.HasValue)
+        {
+            filteredPosts = filteredPosts.Where(p => p.ReadingTime <= maxReadingTime.Value);
+        }
+        
+        if (onlyMyCommunities)
+        {
+            // Примените фильтр по вашим критериям для постов из ваших сообществ
+        }
+
+        return filteredPosts;
+    }
+
+    private IQueryable<Post> ApplySorting(IQueryable<Post> posts, PostSorting? sorting)
+    {
+        return sorting switch
+        {
+            PostSorting.CreateDesk => posts.OrderByDescending(p => p.CreateTime),
+            PostSorting.CreateAsc => posts.OrderBy(p => p.CreateTime),
+            PostSorting.LikeAsc => posts.OrderBy(p => p.Likes),
+            PostSorting.LikeDesc => posts.OrderByDescending(p => p.Likes),
+            _ => posts,
+        };
+    }
+
+    private IQueryable<Post> Paginate(IQueryable<Post> posts, int page, int size)
+    {
+        return posts.Skip((page - 1) * size).Take(size);
     }
 }
