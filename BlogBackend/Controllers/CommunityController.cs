@@ -59,7 +59,7 @@ public class CommunityController: ControllerBase
     {
         var token = Request.Headers["Authorization"].ToString().Substring(7);
         var userRole = await _communityService.GetUserRole(id, token);
-        return Ok(userRole.GetDisplayName());
+        return Ok(userRole);
     }
     
     [HttpPost]

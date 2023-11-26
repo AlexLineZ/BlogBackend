@@ -4,7 +4,7 @@ namespace BlogBackend.Models.DTO;
 
 public class CreatePostDto
 {
-    [Required]
+    [Key]
     [MinLength(5)]
     public String Title { get; set; }
 
@@ -14,8 +14,7 @@ public class CreatePostDto
 
     [Required]
     public Int32 ReadingTime { get; set; }
-
-    [Url]
+    
     public String Image { get; set; }
 
     public Guid? AddressId { get; set; }

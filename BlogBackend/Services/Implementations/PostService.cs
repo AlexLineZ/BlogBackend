@@ -22,7 +22,7 @@ public class PostService: IPostService
         var user = await GetUser(token);
         
         var newPost = new Post {
-            Id = new Guid(),
+            Id = Guid.NewGuid(),
             CreateTime = DateTime.UtcNow, 
             Title = post.Title,
             Description = post.Description,
@@ -50,7 +50,10 @@ public class PostService: IPostService
         foreach (var item in list)
         {
             var tag = await _dbContext.Tags.FirstOrDefaultAsync(t => t.Id == item);
-            tagDtos.Add(tag);
+            if (tag != null)
+            {
+                tagDtos.Add(tag);
+            }
         }
 
         return tagDtos;

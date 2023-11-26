@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json.Serialization;
 using BlogBackend.Data;
 using BlogBackend.MiddleWares;
 using BlogBackend.Services.Implementations;
@@ -73,6 +74,10 @@ builder.Services.AddSwaggerGen(option =>
             new string[]{}
         }
     });
+});
+
+builder.Services.AddMvc().AddJsonOptions(opts =>{
+    var enumConverter = new JsonStringEnumConverter(); opts.JsonSerializerOptions.Converters.Add(enumConverter);
 });
 
 builder.Services.AddScoped<IUserService, UserService>();

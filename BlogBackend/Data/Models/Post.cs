@@ -5,7 +5,7 @@ namespace BlogBackend.Models;
 
 public class Post
 {
-    [Required]
+    [Key]
     public Guid Id { get; set; }
     
     [Required]
