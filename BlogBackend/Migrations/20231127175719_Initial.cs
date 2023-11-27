@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -20,11 +21,50 @@ namespace BlogBackend.Migrations
                     Name = table.Column<string>(type: "text", nullable: false),
                     Description = table.Column<string>(type: "text", nullable: false),
                     IsClosed = table.Column<bool>(type: "boolean", nullable: false),
-                    SubscribersCount = table.Column<int>(type: "integer", nullable: false)
+                    SubscribersCount = table.Column<int>(type: "integer", nullable: false),
+                    Posts = table.Column<List<Guid>>(type: "uuid[]", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Communities", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Posts",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreateTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Title = table.Column<string>(type: "text", nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: false),
+                    ReadingTime = table.Column<int>(type: "integer", nullable: false),
+                    Image = table.Column<string>(type: "text", nullable: false),
+                    AuthorId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Author = table.Column<string>(type: "text", nullable: false),
+                    CommunityId = table.Column<Guid>(type: "uuid", nullable: true),
+                    CommunityName = table.Column<string>(type: "text", nullable: true),
+                    AddressId = table.Column<Guid>(type: "uuid", nullable: true),
+                    Likes = table.Column<int>(type: "integer", nullable: false),
+                    HasLike = table.Column<bool>(type: "boolean", nullable: false),
+                    CommentsCount = table.Column<int>(type: "integer", nullable: false),
+                    Tags = table.Column<List<Guid>>(type: "uuid[]", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Posts", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Tags",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreateTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Tags", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -52,7 +92,9 @@ namespace BlogBackend.Migrations
                     Gender = table.Column<int>(type: "integer", nullable: false),
                     Email = table.Column<string>(type: "text", nullable: false),
                     PhoneNumber = table.Column<string>(type: "text", nullable: false),
-                    Password = table.Column<string>(type: "text", nullable: false)
+                    Password = table.Column<string>(type: "text", nullable: false),
+                    Communities = table.Column<List<Guid>>(type: "uuid[]", nullable: true),
+                    Likes = table.Column<List<Guid>>(type: "uuid[]", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -95,6 +137,12 @@ namespace BlogBackend.Migrations
         {
             migrationBuilder.DropTable(
                 name: "CommunityUser");
+
+            migrationBuilder.DropTable(
+                name: "Posts");
+
+            migrationBuilder.DropTable(
+                name: "Tags");
 
             migrationBuilder.DropTable(
                 name: "Tokens");

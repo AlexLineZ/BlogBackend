@@ -24,24 +24,30 @@ public class User
     [EmailAddress]
     public String Email { get; set; }
     
-    [RegularExpression("^\\+\\7 \\(\\d{3}\\) \\d{3}-\\d{2}-\\d{2}$")]
+    [RegularExpression("^\\+7 \\(\\d{3}\\) \\d{3}-\\d{2}-\\d{2}$")]
     public String PhoneNumber { get; set; }
     
     [Required]
     [MinLength(6)]
     public String Password { get; set; }
     
+    public List<Guid>? Communities { get; set; }
+    
+    public List<Guid>? Likes { get; set; }
+
     public User() { }
     public User(Guid id, string fullName, DateTime birthDate, 
-        Gender gender, string email, string phoneNumber, string password)
+        Gender gender, string email, string phoneNumber, string password, List<Guid>? communities, List<Guid>? likes)
     {
         Id = id;
         CreateTime = DateTime.UtcNow;
-        FullName = fullName;
+        FullName = fullName; 
         BirthDate = birthDate;
         Gender = gender;
         Email = email;
         PhoneNumber = phoneNumber;
         Password = password;
+        Communities = communities;
+        Likes = likes;
     }
 }

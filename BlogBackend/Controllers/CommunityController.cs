@@ -1,4 +1,5 @@
 ﻿using BlogBackend.Models.DTO;
+using BlogBackend.Models.Posts;
 using BlogBackend.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Extensions;
@@ -42,7 +43,12 @@ public class CommunityController: ControllerBase
 
     [HttpGet]
     [Route("{id}/post")]
-    public async Task<IActionResult> GetCommunityPosts(Guid id)
+    public async Task<IActionResult> GetCommunityPosts(Guid id,
+        [FromQuery] List<String>? tags,
+        [FromQuery] PostSorting? sorting,
+        [FromQuery] Int32 page = 1,
+        [FromQuery] Int32 size = 5
+    )
     {
         return Ok(new { test = "test" });
     }

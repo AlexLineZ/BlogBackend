@@ -19,7 +19,7 @@ public class PostController: ControllerBase
     [HttpGet]
     [Route("post")]
     public async Task<IActionResult> GetPostList(
-        [FromQuery] List<String>? tags,
+        [FromQuery] List<Guid>? tags,
         [FromQuery] String? author,
         [FromQuery] Int32? min,
         [FromQuery] Int32? max,

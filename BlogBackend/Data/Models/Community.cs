@@ -4,7 +4,7 @@ using BlogBackend.Models.DTO;
 
 namespace BlogBackend.Models;
 
-public class Community //скаффолд контекста баз данных или database_first
+public class Community
 {
     [Key] 
     public Guid Id { get; set; }
@@ -27,10 +27,12 @@ public class Community //скаффолд контекста баз данных
     [Required]
     public List<CommunityUser> CommunityUsers { get; set; }
     
+    public List<Guid> Posts { get; set; }
+    
     public Community() {}
 
     public Community(Guid id, DateTime createTime, String name, String description, Boolean isClosed,
-        Int32 subscribersCount, List<CommunityUser> communityUsers)
+        Int32 subscribersCount, List<CommunityUser> communityUsers, List<Guid> posts)
     {
         Id = id;
         CreateTime = createTime;
@@ -39,5 +41,6 @@ public class Community //скаффолд контекста баз данных
         IsClosed = isClosed;
         SubscribersCount = subscribersCount;
         CommunityUsers = communityUsers;
+        Posts = posts;
     }
 }

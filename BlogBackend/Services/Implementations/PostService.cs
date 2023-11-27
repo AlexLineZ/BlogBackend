@@ -18,7 +18,7 @@ public class PostService: IPostService
         _tokenService = tokenService;
     }
 
-    public async Task<PostGroup> GetPostList(List<string>? tags, string? author, int? min, int? max,
+    public async Task<PostGroup> GetPostList(List<Guid>? tags, string? author, int? min, int? max,
         PostSorting? sorting, bool onlyMyCommunities, int page, int size)
     {
         try
@@ -49,7 +49,7 @@ public class PostService: IPostService
                     Likes = post.Likes,
                     HasLike = post.HasLike,
                     CommentsCount = post.CommentsCount,
-                    Tags = new List<TagDto>()
+                    Tags = post.Tags
                 }).ToList(),
                 
                 Pagination = new PageInfoModel { Count = size, Size = filteredPosts.Count(), Current = page},
@@ -83,27 +83,11 @@ public class PostService: IPostService
             Likes = 0,
             HasLike = false,
             CommentsCount = 0,
-            Tags = await GetTagList(post.Tags)
+            Tags = post.Tags
         };
         
         _dbContext.Posts.Add(newPost);
         await _dbContext.SaveChangesAsync();
-    }
-
-    private async Task<List<TagDto>> GetTagList(List<Guid> list)
-    {
-        var tagDtos = new List<TagDto>();
-        
-        foreach (var item in list)
-        {
-            var tag = await _dbContext.Tags.FirstOrDefaultAsync(t => t.Id == item);
-            if (tag != null)
-            {
-                tagDtos.Add(tag);
-            }
-        }
-
-        return tagDtos;
     }
 
     private async Task<User> GetUser(String token)
@@ -129,19 +113,19 @@ public class PostService: IPostService
         return user;
     }
     
-    private IQueryable<Post> ApplyFilters(List<Post> posts, List<string>? tags, string? author,
+    private IQueryable<Post> ApplyFilters(List<Post> posts, List<Guid>? tags, string? author,
         int? minReadingTime, int? maxReadingTime, bool onlyMyCommunities)
     {
         var filteredPosts = posts.AsQueryable();
         
         if (tags != null && tags.Any())
         {
-            filteredPosts = filteredPosts.Where(p => p.Tags.Any(t => tags.Contains(t.Name)));
+            filteredPosts = filteredPosts.Where(p => p.Tags.Any(t => tags.Contains(t)));
         }
         
         if (!string.IsNullOrEmpty(author))
         {
-            filteredPosts = filteredPosts.Where(p => p.Author == author);
+            filteredPosts = filteredPosts.Where(p => p.Author.Contains(author));
         }
         
         if (minReadingTime.HasValue)

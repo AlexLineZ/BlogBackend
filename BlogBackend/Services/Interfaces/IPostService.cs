@@ -5,7 +5,7 @@ namespace BlogBackend.Services.Interfaces;
 
 public interface IPostService
 {
-    Task<PostGroup> GetPostList(List<String>? tags, String? author, Int32? min, Int32? max, PostSorting? sorting,
+    Task<PostGroup> GetPostList(List<Guid>? tags, String? author, Int32? min, Int32? max, PostSorting? sorting,
         Boolean onlyMyCommunities, Int32 page, Int32 size);
     Task CreatePost(CreatePostDto post, String token);
 }

@@ -1,7 +1,7 @@
-﻿using System.Runtime.InteropServices.JavaScript;
-using BlogBackend.Data;
+﻿using BlogBackend.Data;
 using BlogBackend.Models;
 using BlogBackend.Models.DTO;
+using BlogBackend.Models.Posts;
 using BlogBackend.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -124,14 +124,64 @@ public class CommunityService : ICommunityService
             Likes = 0,
             HasLike = false,
             CommentsCount = 0,
-            Tags = await GetTagList(post.Tags)
+            Tags = new List<Guid>()
         };
         
         _dbContext.Posts.Add(newPost);
         await _dbContext.SaveChangesAsync();
     }
-    
-    
+
+    public async Task<PostGroup> GetCommunityPost(Guid communityId, List<Guid>? tags,
+        PostSorting? sorting, Int32 page, Int32 size)
+    {
+        var community = await _dbContext.Communities
+            .FirstOrDefaultAsync(c => c.Id == communityId);
+        
+        if (community == null)
+        {
+            throw new FileNotFoundException("Community is not found");
+        }
+        
+        var posts = new List<Post>();
+        community.Posts.ForEach(postId =>
+        {
+            var post = _dbContext.Posts.FirstOrDefault(p => p.Id == postId);
+            if (post != null)
+            {
+                posts.Add(post);
+            }
+        });
+
+        var filteredPosts = ApplyFilters(posts, tags);
+        filteredPosts = ApplySorting(filteredPosts, sorting);
+        var paginatedPosts = Paginate(filteredPosts, page, size);
+        
+        var postGroup = new PostGroup
+        {
+            Posts = paginatedPosts.Select(post => new PostDto
+            {
+                Id = post.Id,
+                CreateTime = post.CreateTime,
+                Title = post.Title,
+                Description = post.Description,
+                ReadingTime = post.ReadingTime,
+                Image = post.Image,
+                AuthorId = post.AuthorId,
+                Author = post.Author,
+                CommunityId = post.CommunityId,
+                CommunityName = post.CommunityName,
+                AddressId = post.AddressId,
+                Likes = post.Likes,
+                HasLike = post.HasLike,
+                CommentsCount = post.CommentsCount,
+                Tags = post.Tags
+            }).ToList(),
+                
+            Pagination = new PageInfoModel { Count = size, Size = filteredPosts.Count(), Current = page},
+        };
+        
+        return postGroup;
+    }
 
     public async Task<CommunityRole> GetUserRole(Guid communityId, String token)
     {
@@ -184,6 +234,8 @@ public class CommunityService : ICommunityService
         };
 
         community.CommunityUsers.Add(newSubscription);
+        user.Communities.Add(newSubscription.CommunityId);
+        community.SubscribersCount++;
         await _dbContext.SaveChangesAsync();
         return new OkResult();
     }
@@ -210,6 +262,8 @@ public class CommunityService : ICommunityService
         }
         
         community.CommunityUsers.Remove(existingSubscription);
+        community.SubscribersCount--;
+        user.Communities.Remove(existingSubscription.CommunityId);
         await _dbContext.SaveChangesAsync();
         return new OkResult();
     }
@@ -237,20 +291,34 @@ public class CommunityService : ICommunityService
 
         return user;
     }
-    
-    private async Task<List<TagDto>> GetTagList(List<Guid> list)
-    {
-        var tagDtos = new List<TagDto>();
-        
-        foreach (var item in list)
-        {
-            var tag = await _dbContext.Tags.FirstOrDefaultAsync(t => t.Id == item);
-            if (tag != null)
-            {
-                tagDtos.Add(tag);
-            }
-        }
 
-        return tagDtos;
+    private IQueryable<Post> ApplyFilters(List<Post> posts, List<Guid>? tags)
+    {
+        var filteredPosts = posts.AsQueryable();
+        
+        if (tags != null && tags.Any())
+        {
+            filteredPosts = filteredPosts.Where(p => p.Tags.Any(t => tags.Contains(t)));
+        }
+        
+        return filteredPosts;
+    }
+    
+    private IQueryable<Post> ApplySorting(IQueryable<Post> posts, PostSorting? sorting)
+    {
+        return sorting switch
+        {
+            PostSorting.CreateDesk => posts.OrderByDescending(p => p.CreateTime),
+            PostSorting.CreateAsc => posts.OrderBy(p => p.CreateTime),
+            PostSorting.LikeAsc => posts.OrderBy(p => p.Likes),
+            PostSorting.LikeDesc => posts.OrderByDescending(p => p.Likes),
+            _ => posts,
+        };
+    }
+    
+    private IQueryable<Post> Paginate(IQueryable<Post> posts, int page, int size)
+    {
+        return posts.Skip((page - 1) * size).Take(size);
     }
 }
+

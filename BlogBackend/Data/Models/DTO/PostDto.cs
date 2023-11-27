@@ -44,5 +44,5 @@ public class PostDto
     [Required]
     public Int32 CommentsCount { get; set; }
     
-    public List<TagDto>? Tags { get; set; }
+    public List<Guid>? Tags { get; set; }
 }

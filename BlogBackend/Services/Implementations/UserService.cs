@@ -39,8 +39,10 @@ public class UserService: IUserService
             model.Gender,
             model.Email,
             model.PhoneNumber,
-            UserHelper.GenerateSHA256(model.Password)
-        );
+            UserHelper.GenerateSHA256(model.Password),
+            new List<Guid>(),
+            new List<Guid>()
+            );
         
         var token = _configuration.GenerateJwtToken(user);
         
