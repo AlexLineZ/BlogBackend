@@ -58,7 +58,7 @@ public class CommunityService : ICommunityService
     {
         var community = await _dbContext.Communities
             .Include(c => c.CommunityUsers)
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(c => c.Id == communityId);
 
         if (community == null)
         {
@@ -190,7 +190,7 @@ public class CommunityService : ICommunityService
 
         var community = await _dbContext.Communities
             .Include(c => c.CommunityUsers)
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(c => c.Id == communityId);
 
         var userRole = community.CommunityUsers
             .Where(cu => cu.CommunityId == communityId && cu.UserId == userId)
@@ -211,7 +211,7 @@ public class CommunityService : ICommunityService
 
         var community = await _dbContext.Communities
             .Include(c => c.CommunityUsers)
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(c => c.Id == communityId);
 
         if (community == null)
         {
@@ -246,8 +246,8 @@ public class CommunityService : ICommunityService
 
         var community = await _dbContext.Communities
             .Include(c => c.CommunityUsers)
-            .FirstOrDefaultAsync();
-
+            .FirstOrDefaultAsync(c => c.Id == communityId);
+        
         if (community == null)
         {
             throw new FileNotFoundException("Community is not found");
