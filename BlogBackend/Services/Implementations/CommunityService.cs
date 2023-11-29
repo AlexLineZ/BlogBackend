@@ -124,10 +124,11 @@ public class CommunityService : ICommunityService
             Likes = 0,
             HasLike = false,
             CommentsCount = 0,
-            Tags = new List<Guid>()
+            Tags = post.Tags
         };
         
         _dbContext.Posts.Add(newPost);
+        community.Posts.Add(newPost.Id);
         await _dbContext.SaveChangesAsync();
     }
 

@@ -44,13 +44,14 @@ public class CommunityController: ControllerBase
     [HttpGet]
     [Route("{id}/post")]
     public async Task<IActionResult> GetCommunityPosts(Guid id,
-        [FromQuery] List<String>? tags,
+        [FromQuery] List<Guid>? tags,
         [FromQuery] PostSorting? sorting,
         [FromQuery] Int32 page = 1,
         [FromQuery] Int32 size = 5
     )
     {
-        return Ok(new { test = "test" });
+        var postGroup = await _communityService.GetCommunityPost(id, tags, sorting, page, size);
+        return Ok(postGroup);
     }
 
     [HttpPost]
