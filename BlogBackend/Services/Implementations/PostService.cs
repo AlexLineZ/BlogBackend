@@ -87,6 +87,7 @@ public class PostService: IPostService
         };
         
         _dbContext.Posts.Add(newPost);
+        user.Posts.Add(newPost.Id);
         await _dbContext.SaveChangesAsync();
     }
 

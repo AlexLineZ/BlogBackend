@@ -8,7 +8,7 @@ public class AuthorDto
     [Required]
     [MinLength(1)]
     public String FullName { get; set; }
-    public DateTime? Birthday { get; set; }
+    public DateTime? BirthDate { get; set; }
     [Required]
     public Gender Gender { get; set; }
     public Int32 Posts { get; set; }

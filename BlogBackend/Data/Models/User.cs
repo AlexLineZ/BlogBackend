@@ -31,11 +31,11 @@ public class User
     [MinLength(6)]
     public String Password { get; set; }
     
-    public List<Guid>? Communities { get; set; }
+    public List<Guid> Communities { get; set; }
     
-    public List<Guid>? Posts { get; set; }
+    public List<Guid> Posts { get; set; }
     
-    public List<Guid>? Likes { get; set; }
+    public List<Guid> Likes { get; set; }
 
     public User() { }
     public User(Guid id, string fullName, DateTime birthDate, 
