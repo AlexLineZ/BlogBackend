@@ -16,7 +16,13 @@ public class TagService: ITagService
     
     public async Task<List<TagDto>> GetTagList()
     {
-        var tags = await _dbContext.Tags.ToListAsync();
+        var tags = await _dbContext.Tags.Select(tag => new TagDto
+        {
+            Id = tag.Id,
+            CreateTime = tag.CreateTime,
+            Name = tag.Name
+        }).ToListAsync();
+        
         return tags;
     }
 }

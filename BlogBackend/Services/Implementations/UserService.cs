@@ -41,6 +41,7 @@ public class UserService: IUserService
             model.PhoneNumber,
             UserHelper.GenerateSHA256(model.Password),
             new List<Guid>(),
+            new List<Guid>(),
             new List<Guid>()
             );
         

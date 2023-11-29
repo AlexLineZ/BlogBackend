@@ -59,14 +59,18 @@ public class PostController: ControllerBase
     [Route("post/{postId}/like")]
     public async Task<IActionResult> LikePost(Guid postId)
     {
-        return Ok(new { test = "test" });
+        var token = Request.Headers["Authorization"].ToString().Substring(7);
+        await _postService.LikePost(postId, token);
+        return Ok();
     }
     
     [HttpDelete]
     [Route("post/{postId}/like")]
     public async Task<IActionResult> DislikePost(Guid postId)
     {
-        return Ok(new { test = "test" });
+        var token = Request.Headers["Authorization"].ToString().Substring(7);
+        await _postService.DislikePost(postId, token);
+        return Ok();
     }
 }
 

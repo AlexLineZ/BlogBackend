@@ -90,6 +90,53 @@ public class PostService: IPostService
         await _dbContext.SaveChangesAsync();
     }
 
+
+    public async Task LikePost(Guid postId, String token)
+    {
+        var user = await GetUser(token);
+        
+        var post = await _dbContext.Posts.FirstOrDefaultAsync(p => p.Id == postId);
+        
+        if (post == null)
+        {
+            throw new InvalidOperationException("Post not found");
+        }
+        
+        var existingLike = user.Likes.Any(l => l == postId);
+        
+        if (existingLike)
+        {
+            throw new InvalidOperationException("You already like this post");
+        }
+
+        post.Likes++;
+        user.Likes.Add(postId);
+        await _dbContext.SaveChangesAsync();
+    }
+
+    public async Task DislikePost(Guid postId, String token)
+    {
+        var user = await GetUser(token);
+        
+        var post = await _dbContext.Posts.FirstOrDefaultAsync(p => p.Id == postId);
+        
+        if (post == null)
+        {
+            throw new InvalidOperationException("Post not found");
+        }
+        
+        var existingLike = user.Likes.FirstOrDefault(l => l == postId);
+        
+        if (existingLike == null)
+        {
+            throw new InvalidOperationException("You not like this post");
+        }
+
+        post.Likes--;
+        user.Likes.Remove(postId);
+        await _dbContext.SaveChangesAsync();
+    }
+
     private async Task<User> GetUser(String token)
     {
         var findToken = _dbContext.Tokens.FirstOrDefault(x =>
@@ -140,7 +187,7 @@ public class PostService: IPostService
         
         if (onlyMyCommunities)
         {
-            // Примените фильтр по вашим критериям для постов из ваших сообществ
+            //допилить
         }
 
         return filteredPosts;

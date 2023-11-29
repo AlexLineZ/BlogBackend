@@ -1,6 +1,5 @@
 ﻿using BlogBackend.Data;
 using BlogBackend.Models;
-using BlogBackend.Models.DTO;
 
 namespace BlogBackend.Initialization;
 
@@ -65,21 +64,21 @@ public class DataInitializationService : IHostedService
 
             if (!dbContext.Tags.Any())
             {
-                dbContext.Tags.Add(new TagDto
+                dbContext.Tags.Add(new Tag
                 {
                     Id = new Guid(),
                     CreateTime = DateTime.UtcNow,
                     Name = "18+"
                 });
                 
-                dbContext.Tags.Add(new TagDto
+                dbContext.Tags.Add(new Tag
                 {
                     Id = new Guid(),
                     CreateTime = DateTime.UtcNow,
                     Name = "физика"
                 });
                 
-                dbContext.Tags.Add(new TagDto
+                dbContext.Tags.Add(new Tag
                 {
                     Id = new Guid(),
                     CreateTime = DateTime.UtcNow,
