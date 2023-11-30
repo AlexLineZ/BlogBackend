@@ -47,7 +47,8 @@ public class UserController : ControllerBase
     public async Task<IActionResult> Logout()
     {
         var token = Request.Headers["Authorization"].ToString().Substring(7);
-        return await _userService.Logout(token);
+        await _userService.Logout(token);
+        return Ok();
     }
 
     [HttpGet]
@@ -55,7 +56,8 @@ public class UserController : ControllerBase
     public IActionResult GetProfile() //поправить это!
     {
         var token = Request.Headers["Authorization"].ToString().Substring(7);
-        return Ok(_userService.GetProfile(token));
+        var response = _userService.GetProfile(token);
+        return Ok(response);
     }
     
     [HttpPut]
@@ -68,6 +70,7 @@ public class UserController : ControllerBase
         }
         
         var token = Request.Headers["Authorization"].ToString().Substring(7);
-        return await _userService.PutProfile(model, token);
+        await _userService.PutProfile(model, token);
+        return Ok();
     }
 }

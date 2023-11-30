@@ -207,7 +207,7 @@ public class CommunityService : ICommunityService
         return userRole;
     }
 
-    public async Task<IActionResult> Subscribe(Guid communityId, String token)
+    public async Task Subscribe(Guid communityId, String token)
     {
         var user = await GetUser(token);
 
@@ -239,10 +239,9 @@ public class CommunityService : ICommunityService
         user.Communities.Add(newSubscription.CommunityId);
         community.SubscribersCount++;
         await _dbContext.SaveChangesAsync();
-        return new OkResult();
     }
 
-    public async Task<IActionResult> Unsubscribe(Guid communityId, String token)
+    public async Task Unsubscribe(Guid communityId, String token)
     {
         var user = await GetUser(token);
 
@@ -267,7 +266,6 @@ public class CommunityService : ICommunityService
         community.SubscribersCount--;
         user.Communities.Remove(existingSubscription.CommunityId);
         await _dbContext.SaveChangesAsync();
-        return new OkResult();
     }
 
 

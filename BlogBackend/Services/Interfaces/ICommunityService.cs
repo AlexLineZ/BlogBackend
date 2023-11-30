@@ -14,6 +14,6 @@ public interface ICommunityService
         PostSorting? sorting, Int32 page, Int32 size);
     Task CreatePost(Guid communityId, CreatePostDto post, String token);
     Task<CommunityRole> GetUserRole(Guid communityId, String token);
-    Task<IActionResult> Subscribe(Guid communityId, String token);
-    Task<IActionResult> Unsubscribe(Guid communityId, String token);
+    Task Subscribe(Guid communityId, String token);
+    Task Unsubscribe(Guid communityId, String token);
 }

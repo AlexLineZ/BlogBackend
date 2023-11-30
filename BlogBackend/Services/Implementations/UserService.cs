@@ -70,7 +70,7 @@ public class UserService: IUserService
         return new TokenResponse(token);
     }
 
-    public async Task<IActionResult> Logout(String token)
+    public async Task Logout(String token)
     {
         var findToken = _dbContext.Tokens.FirstOrDefault(x =>
             x.Token == token);
@@ -80,8 +80,6 @@ public class UserService: IUserService
         }
         _dbContext.Tokens.Remove(findToken);
         await _dbContext.SaveChangesAsync();
-
-        return new OkResult();
     }
 
     public UserDto GetProfile(String token)
@@ -111,7 +109,7 @@ public class UserService: IUserService
         return userDTO;
     }
 
-    public async Task<IActionResult> PutProfile(UserEditModel model, String token)
+    public async Task PutProfile(UserEditModel model, String token)
     {
         var findToken = _dbContext.Tokens.FirstOrDefault(x =>
             token == x.Token);
@@ -140,6 +138,5 @@ public class UserService: IUserService
             user.PhoneNumber = model.PhoneNumber;
         }
         await _dbContext.SaveChangesAsync();
-        return new OkResult();
     }
 }
