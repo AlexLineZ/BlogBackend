@@ -2,6 +2,7 @@
 using System.Net;
 using System.Security.Authentication;
 using System.Text.Json;
+using BlogBackend.Exceptions;
 using BlogBackend.Models.Info;
 
 namespace BlogBackend.MiddleWares;
@@ -36,15 +37,23 @@ public class CustomExceptionHandlerMiddleware
                 code = HttpStatusCode.BadRequest;
                 result = JsonSerializer.Serialize(new MessageResponse
                 {
-                    Status = "Error",
+                    Status = ((int)code).ToString(),
                     Message = e.Message
                 });
                 break;
-            case InvalidOperationException:
+            case UnauthorizedAccessException:
                 code = HttpStatusCode.Unauthorized;
                 result = JsonSerializer.Serialize(new MessageResponse
                 {
-                    Status = "Error",
+                    Status = ((int)code).ToString(),
+                    Message = e.Message
+                });
+                break;
+            case ResourceNotFoundException:
+                code = HttpStatusCode.NotFound;
+                result = JsonSerializer.Serialize(new MessageResponse
+                {
+                    Status = ((int)code).ToString(),
                     Message = e.Message
                 });
                 break;
@@ -52,7 +61,7 @@ public class CustomExceptionHandlerMiddleware
                 code = HttpStatusCode.InternalServerError;
                 result = JsonSerializer.Serialize(new MessageResponse
                 {
-                    Status = "Error",
+                    Status = ((int)code).ToString(),
                     Message = e.Message
                 });
                 break;

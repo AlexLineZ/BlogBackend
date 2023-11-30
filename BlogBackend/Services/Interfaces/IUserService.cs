@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BlogBackend.Services.Interfaces;
 
-public interface IUserService //убрать actionResult
+public interface IUserService
 {
     Task<TokenResponse> Register([FromBody] UserRegisterModel model);
     Task<TokenResponse> Login([FromBody] LoginCredentials model);

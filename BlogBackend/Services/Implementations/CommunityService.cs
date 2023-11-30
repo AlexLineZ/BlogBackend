@@ -1,9 +1,9 @@
 ﻿using BlogBackend.Data;
+using BlogBackend.Exceptions;
 using BlogBackend.Models;
 using BlogBackend.Models.DTO;
 using BlogBackend.Models.Posts;
 using BlogBackend.Services.Interfaces;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace BlogBackend.Services.Implementations;
@@ -62,7 +62,7 @@ public class CommunityService : ICommunityService
 
         if (community == null)
         {
-            throw new FileNotFoundException("Community is not found");
+            throw new ResourceNotFoundException("Community is not found");
         }
 
         var administrators =  community.CommunityUsers
@@ -106,7 +106,7 @@ public class CommunityService : ICommunityService
         
         if (community == null)
         {
-            throw new FileNotFoundException("Community is not found");
+            throw new ResourceNotFoundException("Community is not found");
         }
         
         var newPost = new Post {
@@ -141,7 +141,7 @@ public class CommunityService : ICommunityService
         
         if (community == null)
         {
-            throw new FileNotFoundException("Community is not found");
+            throw new ResourceNotFoundException("Community is not found");
         }
         
         var posts = new List<Post>();
@@ -199,7 +199,7 @@ public class CommunityService : ICommunityService
             .Select(cu => cu.Role)
             .FirstOrDefault();
 
-        if (userRole == null)
+        if (userRole == default)
         {
             throw new InvalidOperationException("User is not a member of the community");
         }
@@ -217,7 +217,7 @@ public class CommunityService : ICommunityService
 
         if (community == null)
         {
-            throw new FileNotFoundException("Community is not found");
+            throw new ResourceNotFoundException("Community is not found");
         }
         
         var existingSubscription = community.CommunityUsers
@@ -251,7 +251,7 @@ public class CommunityService : ICommunityService
         
         if (community == null)
         {
-            throw new FileNotFoundException("Community is not found");
+            throw new ResourceNotFoundException("Community is not found");
         }
         
         var existingSubscription = community.CommunityUsers
@@ -286,7 +286,7 @@ public class CommunityService : ICommunityService
 
         if (user == null)
         {
-            throw new InvalidOperationException("User is not found");
+            throw new ResourceNotFoundException("User is not found");
         }
 
         return user;

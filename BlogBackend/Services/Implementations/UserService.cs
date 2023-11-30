@@ -1,6 +1,7 @@
 ﻿using System.Security.Authentication;
 using BlogBackend.Data;
 using BlogBackend.Data.Models.User;
+using BlogBackend.Exceptions;
 using BlogBackend.Helpers;
 using BlogBackend.Models;
 using BlogBackend.Models.DTO;
@@ -22,7 +23,7 @@ public class UserService: IUserService
         _tokenService = tokenService;
     }
 
-    public async Task<TokenResponse> Register([FromBody] UserRegisterModel model) //автомапперы
+    public async Task<TokenResponse> Register([FromBody] UserRegisterModel model)
     {
         var isUserRegistered = _dbContext.Users.FirstOrDefault(x =>
             x.Email == model.Email);
@@ -76,7 +77,7 @@ public class UserService: IUserService
             x.Token == token);
         if (findToken == null)
         {
-            throw new InvalidOperationException("Token not found");
+            throw new UnauthorizedAccessException("Token not found");
         }
         _dbContext.Tokens.Remove(findToken);
         await _dbContext.SaveChangesAsync();
@@ -91,7 +92,7 @@ public class UserService: IUserService
         {
             if (_tokenService.IsTokenFresh(findToken) == false)
             {
-                throw new InvalidOperationException("Token expired");
+                throw new UnauthorizedAccessException("Token expired");
             }
         }
 
@@ -100,7 +101,7 @@ public class UserService: IUserService
 
         if (user == null)
         {
-            throw new InvalidOperationException("Not authorized");
+            throw new ResourceNotFoundException("User not found");
         }
         
         var userDTO = new UserDto(user.Id, user.CreateTime, user.FullName,
@@ -118,7 +119,7 @@ public class UserService: IUserService
         {
             if (_tokenService.IsTokenFresh(findToken) == false)
             {
-                throw new InvalidOperationException("Token expired");
+                throw new UnauthorizedAccessException("Token expired");
             }
         }
         
@@ -127,7 +128,7 @@ public class UserService: IUserService
 
         if (user == null)
         {
-            throw new InvalidOperationException("Not authorized");
+            throw new ResourceNotFoundException("User not found");
         }
         else
         {

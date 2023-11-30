@@ -1,5 +1,4 @@
-﻿
-using BlogBackend.Data.Models.User;
+﻿using BlogBackend.Data.Models.User;
 using BlogBackend.Models;
 using BlogBackend.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;

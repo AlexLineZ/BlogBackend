@@ -1,4 +1,5 @@
 ﻿using BlogBackend.Data;
+using BlogBackend.Exceptions;
 using BlogBackend.Models;
 using BlogBackend.Models.DTO;
 using BlogBackend.Models.Posts;
@@ -18,7 +19,7 @@ public class PostService: IPostService
         _tokenService = tokenService;
     }
 
-    public async Task<PostGroup> GetPostList(List<Guid>? tags, string? author, int? min, int? max,
+    public async Task<PostGroup> GetPostList(List<Guid>? tags, string? author, int? min, int? max, //ПОЛЬЗОВАТЕЛЬ
         PostSorting? sorting, bool onlyMyCommunities, int page, int size)
     {
         try
@@ -63,7 +64,6 @@ public class PostService: IPostService
         }
     }
 
-    
     public async Task CreatePost(CreatePostDto post, String token)
     {
         var user = await GetUser(token);
@@ -100,7 +100,7 @@ public class PostService: IPostService
         
         if (post == null)
         {
-            throw new InvalidOperationException("Post not found");
+            throw new ResourceNotFoundException("Post not found");
         }
         
         var existingLike = user.Likes.Any(l => l == postId);
@@ -123,12 +123,12 @@ public class PostService: IPostService
         
         if (post == null)
         {
-            throw new InvalidOperationException("Post not found");
+            throw new ResourceNotFoundException("Post not found");
         }
         
-        var existingLike = user.Likes.FirstOrDefault(l => l == postId);
+        var existingLike = user.Likes.Any(l => l == postId);
         
-        if (existingLike == null)
+        if (!existingLike)
         {
             throw new InvalidOperationException("You not like this post");
         }
@@ -147,7 +147,7 @@ public class PostService: IPostService
         {
             if (_tokenService.IsTokenFresh(findToken) == false)
             {
-                throw new InvalidOperationException("Token expired");
+                throw new UnauthorizedAccessException("Token expired");
             }
         }
         
@@ -155,7 +155,7 @@ public class PostService: IPostService
 
         if (user == null)
         {
-            throw new InvalidOperationException("User is not found");
+            throw new ResourceNotFoundException("User is not found");
         }
 
         return user;

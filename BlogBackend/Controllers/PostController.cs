@@ -43,6 +43,10 @@ public class PostController: ControllerBase
     [Route("post")]
     public async Task<IActionResult> CreatePost([FromBody] CreatePostDto model)
     {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
         var token = Request.Headers["Authorization"].ToString().Substring(7);
         await _postService.CreatePost(model, token);
         return Ok();

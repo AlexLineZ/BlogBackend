@@ -51,7 +51,7 @@ builder.Services.AddAuthorization(options => options.DefaultPolicy =
 
 builder.Services.AddSwaggerGen(option =>
 {
-    option.SwaggerDoc("v1", new OpenApiInfo { Title = "Pathnostics", Version = "v1" });
+    option.SwaggerDoc("v1", new OpenApiInfo { Title = "Blog.API", Version = "1.0" });
     option.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         In = ParameterLocation.Header,
