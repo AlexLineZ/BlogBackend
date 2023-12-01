@@ -2,7 +2,7 @@
 
 public enum PostSorting
 {
-    CreateDesk,
+    CreateDesс,
     CreateAsc,
     LikeAsc,
     LikeDesc

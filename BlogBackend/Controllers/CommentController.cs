@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using BlogBackend.Models.Comments;
+using BlogBackend.Services.Interfaces;
+using Microsoft.AspNetCore.Mvc;
 
 namespace BlogBackend.Controllers;
 
@@ -7,25 +9,37 @@ namespace BlogBackend.Controllers;
 [Route("api")]
 public class CommentController: ControllerBase
 {
+    private readonly ICommentService _commentService;
+
+    public CommentController(ICommentService commentService)
+    {
+        _commentService = commentService;
+    }
+
     [HttpGet]
     [Route("comment/{id}/tree")]
     public async Task<IActionResult> GetCommentTree(Guid id)
     {
-        return Ok(new {tree = "test"});
+        var comment = await _commentService.GetCommentsTree(id);
+        return Ok(comment);
     }
     
     [HttpPost]
     [Route("post/{id}/comment")]
-    public async Task<IActionResult> AddComment(Guid id)
+    public async Task<IActionResult> AddComment(Guid id, [FromBody] CreateCommentDto comment)
     {
-        return Ok(new {tree = "test"});
+        var token = Request.Headers["Authorization"].ToString().Substring(7);
+        await _commentService.CreateComment(comment, id, token);
+        return Ok();
     }
 
     [HttpPut]
     [Route("comment/{id}")]
-    public async Task<IActionResult> EditComment(Guid id)
+    public async Task<IActionResult> EditComment(Guid id, [FromBody] UpdateCommentDto comment)
     {
-        return Ok(new {tree = "test"});
+        var token = Request.Headers["Authorization"].ToString().Substring(7);
+        await _commentService.UpdateComment(id, comment, token);
+        return Ok();
     }
 
     [HttpDelete]

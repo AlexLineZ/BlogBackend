@@ -1,4 +1,5 @@
 ﻿using BlogBackend.Data;
+using BlogBackend.Data.Models.Posts;
 using BlogBackend.Exceptions;
 using BlogBackend.Models;
 using BlogBackend.Models.Comments;
@@ -25,7 +26,9 @@ public class PostService: IPostService
     {
         try
         {
-            var allPosts = await _dbContext.Posts.ToListAsync();
+            var allPosts = await _dbContext.Posts
+                .Include(p => p.Comments)
+                .ToListAsync();
             
             var filteredPosts = ApplyFilters(allPosts, tags, author, min, max, onlyMyCommunities);
             
@@ -50,7 +53,7 @@ public class PostService: IPostService
                     AddressId = post.AddressId,
                     Likes = post.Likes,
                     HasLike = false,
-                    CommentsCount = post.CommentsCount,
+                    CommentsCount = post.Comments.Count,
                     Tags = GetTagsList(post)
                 }).ToList(),
                 
@@ -67,7 +70,7 @@ public class PostService: IPostService
 
     public async Task CreatePost(CreatePostDto post, String token)
     {
-        var user = await GetUser(token);
+        var user = await _tokenService.GetUser(token);
         
         var newPost = new Post {
             Id = Guid.NewGuid(),
@@ -92,10 +95,64 @@ public class PostService: IPostService
         await _dbContext.SaveChangesAsync();
     }
 
+    public async Task<PostFullDto> GetPost(Guid postId, string token)
+    {
+        var post = await _dbContext.Posts
+            .Include(p => p.Comments)
+            .FirstOrDefaultAsync(p => p.Id == postId);
+
+        if (post == null)
+        {
+            throw new ResourceNotFoundException("Post not found");
+        }
+        
+        var user = await _tokenService.GetUser(token);
+        
+        var hasLike = user.Likes.Contains(postId);
+
+        var comments = post.Comments
+            .Where(c => c.ParentId == null)
+            .Select(comment => new CommentDto
+            {
+                Id = comment.Id,
+                CreateTime = comment.CreateTime,
+                Content = comment.Content,
+                ModifiedDate = comment.ModifiedDate,
+                DeleteDate = comment.DeleteDate,
+                AuthorId = comment.AuthorId,
+                Author = comment.Author,
+                SubComments = BuildCommentTree(comment.Id).Count - 1
+            })
+            .ToList();
+        
+        var postDto = new PostFullDto
+        {
+            Id = post.Id,
+            CreateTime = post.CreateTime,
+            Title = post.Title,
+            Description = post.Description,
+            ReadingTime = post.ReadingTime, 
+            Image = post.Image,
+            AuthorId = post.AuthorId,
+            Author = post.Author,
+            CommunityId = post.CommunityId,
+            CommunityName = post.CommunityName,
+            AddressId = post.AddressId,
+            Likes = post.Likes,
+            HasLike = hasLike,
+            CommentsCount = post.Comments.Count,
+            Tags = GetTagsList(post),
+            Comments = comments
+        };
+
+        return postDto;
+    }
+
+
 
     public async Task LikePost(Guid postId, String token)
     {
-        var user = await GetUser(token);
+        var user = await _tokenService.GetUser(token);
         
         var post = await _dbContext.Posts.FirstOrDefaultAsync(p => p.Id == postId);
         
@@ -115,10 +172,10 @@ public class PostService: IPostService
         user.Likes.Add(postId);
         await _dbContext.SaveChangesAsync();
     }
-
+    
     public async Task DislikePost(Guid postId, String token)
     {
-        var user = await GetUser(token);
+        var user = await _tokenService.GetUser(token);
         
         var post = await _dbContext.Posts.FirstOrDefaultAsync(p => p.Id == postId);
         
@@ -139,29 +196,6 @@ public class PostService: IPostService
         await _dbContext.SaveChangesAsync();
     }
 
-    private async Task<User> GetUser(String token)
-    {
-        var findToken = _dbContext.Tokens.FirstOrDefault(x =>
-            token == x.Token);
-        
-        if (findToken != null)
-        {
-            if (_tokenService.IsTokenFresh(findToken) == false)
-            {
-                throw new UnauthorizedAccessException("Token expired");
-            }
-        }
-        
-        var user = _dbContext.Users.FirstOrDefault(u => u.Id == findToken.UserId);
-
-        if (user == null)
-        {
-            throw new ResourceNotFoundException("User is not found");
-        }
-
-        return user;
-    }
-    
     private IQueryable<Post> ApplyFilters(List<Post> posts, List<Guid>? tags, string? author,
         int? minReadingTime, int? maxReadingTime, bool onlyMyCommunities)
     {
@@ -199,7 +233,7 @@ public class PostService: IPostService
     {
         return sorting switch
         {
-            PostSorting.CreateDesk => posts.OrderByDescending(p => p.CreateTime),
+            PostSorting.CreateDesс => posts.OrderByDescending(p => p.CreateTime),
             PostSorting.CreateAsc => posts.OrderBy(p => p.CreateTime),
             PostSorting.LikeAsc => posts.OrderBy(p => p.Likes),
             PostSorting.LikeDesc => posts.OrderByDescending(p => p.Likes),
@@ -227,4 +261,23 @@ public class PostService: IPostService
         return tagDtos;
     }
     
+    private List<Comment> BuildCommentTree(Guid commentId)
+    {
+        var comment = _dbContext.Comments
+            .Include(c => c.SubCommentsList)
+            .FirstOrDefault(c => c.Id == commentId);
+
+        var commentTree = new List<Comment> { comment };
+
+        if (comment.SubCommentsList != null)
+        {
+            foreach (var subComment in comment.SubCommentsList)
+            {
+                var subCommentTree = BuildCommentTree(subComment.Id);
+                commentTree.AddRange(subCommentTree);
+            }
+        }
+        
+        return commentTree;
+    }
 }

@@ -1,4 +1,5 @@
 ﻿using BlogBackend.Data;
+using BlogBackend.Exceptions;
 using BlogBackend.Models;
 using BlogBackend.Services.Interfaces;
 
@@ -34,5 +35,30 @@ public class TokenService : ITokenService
     public Boolean IsTokenFresh(TokenStorage tokenData)
     {
         return DateTime.UtcNow <= tokenData.ExpirationDate;
+    }
+    
+    public async Task<User> GetUser(String token)
+    {
+        var findToken = _dbContext.Tokens.FirstOrDefault(x =>
+            token == x.Token);
+
+        if (findToken == null)
+        {
+            throw new InvalidOperationException("Token is not found");
+        }
+        
+        if (IsTokenFresh(findToken) == false)
+        {
+            throw new InvalidOperationException("Token expired");
+        }
+        
+        var user = _dbContext.Users.FirstOrDefault(u => u.Id == findToken.UserId);
+
+        if (user == null)
+        {
+            throw new ResourceNotFoundException("User is not found");
+        }
+
+        return user;
     }
 }

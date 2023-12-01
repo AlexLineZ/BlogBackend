@@ -56,7 +56,9 @@ public class PostController: ControllerBase
     [Route("post/{id}")]
     public async Task<IActionResult> GetPostInformation(Guid id)
     {
-        return Ok(new { test = "test" });
+        var token = Request.Headers["Authorization"].ToString().Substring(7);
+        var postFull = await _postService.GetPost(id, token);
+        return Ok(postFull);
     }
     
     [HttpPost]

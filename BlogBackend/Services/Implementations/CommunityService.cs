@@ -39,7 +39,7 @@ public class CommunityService : ICommunityService
 
     public async Task<List<CommunityUserDto>> GetUserCommunity(String token)
     {
-        var user = await GetUser(token);
+        var user = await _tokenService.GetUser(token);
 
         var communityUserDtOs = _dbContext.Communities
             .Where(c => c.CommunityUsers.Any(cu => cu.UserId == user.Id))
@@ -99,7 +99,7 @@ public class CommunityService : ICommunityService
 
     public async Task CreatePost(Guid communityId, CreatePostDto post, String token)
     {
-        var user = await GetUser(token);
+        var user = await _tokenService.GetUser(token);
         
         var community = await _dbContext.Communities
             .FirstOrDefaultAsync(c => communityId == c.Id);
@@ -186,8 +186,7 @@ public class CommunityService : ICommunityService
 
     public async Task<CommunityRole?> GetUserRole(Guid communityId, String token)
     {
-        var user = await GetUser(token);
-        var userId = user.Id;
+        var user = await _tokenService.GetUser(token);
 
         var community = await _dbContext.Communities
             .Include(c => c.CommunityUsers)
@@ -199,7 +198,7 @@ public class CommunityService : ICommunityService
         }
 
         var userRole = community.CommunityUsers
-            .Where(cu => cu.CommunityId == communityId && cu.UserId == userId)
+            .Where(cu => cu.CommunityId == communityId && cu.UserId == user.Id)
             .Select(cu => cu.Role)
             .FirstOrDefault();
 
@@ -213,7 +212,7 @@ public class CommunityService : ICommunityService
 
     public async Task Subscribe(Guid communityId, String token)
     {
-        var user = await GetUser(token);
+        var user = await _tokenService.GetUser(token);
 
         var community = await _dbContext.Communities
             .Include(c => c.CommunityUsers)
@@ -247,7 +246,7 @@ public class CommunityService : ICommunityService
 
     public async Task Unsubscribe(Guid communityId, String token)
     {
-        var user = await GetUser(token);
+        var user = await _tokenService.GetUser(token);
 
         var community = await _dbContext.Communities
             .Include(c => c.CommunityUsers)
@@ -272,32 +271,6 @@ public class CommunityService : ICommunityService
         await _dbContext.SaveChangesAsync();
     }
 
-
-    private async Task<User> GetUser(String token)
-    {
-        var findToken = _dbContext.Tokens.FirstOrDefault(x =>
-            token == x.Token);
-
-        if (findToken == null)
-        {
-            throw new InvalidOperationException("Token is not found");
-        }
-        
-        if (_tokenService.IsTokenFresh(findToken) == false)
-        {
-            throw new InvalidOperationException("Token expired");
-        }
-        
-        var user = _dbContext.Users.FirstOrDefault(u => u.Id == findToken.UserId);
-
-        if (user == null)
-        {
-            throw new ResourceNotFoundException("User is not found");
-        }
-
-        return user;
-    }
-
     private IQueryable<Post> ApplyFilters(List<Post> posts, List<Guid>? tags)
     {
         var filteredPosts = posts.AsQueryable();
@@ -314,7 +287,7 @@ public class CommunityService : ICommunityService
     {
         return sorting switch
         {
-            PostSorting.CreateDesk => posts.OrderByDescending(p => p.CreateTime),
+            PostSorting.CreateDesс => posts.OrderByDescending(p => p.CreateTime),
             PostSorting.CreateAsc => posts.OrderBy(p => p.CreateTime),
             PostSorting.LikeAsc => posts.OrderBy(p => p.Likes),
             PostSorting.LikeDesc => posts.OrderByDescending(p => p.Likes),
