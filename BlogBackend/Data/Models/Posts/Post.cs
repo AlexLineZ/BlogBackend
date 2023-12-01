@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using BlogBackend.Models.Comments;
 using BlogBackend.Models.DTO;
 
 namespace BlogBackend.Models;
@@ -38,14 +39,11 @@ public class Post
     
     [Required]
     public Int32 Likes { get; set; }
-    
-    [Required]
-    public Boolean HasLike { get; set; }
-    
+
     [Required]
     public Int32 CommentsCount { get; set; }
     
     public List<Guid>? Tags { get; set; }
     
-    //public List<Comment> Comments { get; set; }
+    public List<Comment> Comments { get; set; }
 }

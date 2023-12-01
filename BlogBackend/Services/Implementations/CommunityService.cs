@@ -122,7 +122,6 @@ public class CommunityService : ICommunityService
             CommunityName = community.Name,
             AddressId = post.AddressId,
             Likes = 0,
-            HasLike = false,
             CommentsCount = 0,
             Tags = post.Tags
         };
@@ -174,7 +173,7 @@ public class CommunityService : ICommunityService
                 CommunityName = post.CommunityName,
                 AddressId = post.AddressId,
                 Likes = post.Likes,
-                HasLike = post.HasLike,
+                HasLike = false,
                 CommentsCount = post.CommentsCount,
                 Tags = GetTagsList(post)
             }).ToList(),

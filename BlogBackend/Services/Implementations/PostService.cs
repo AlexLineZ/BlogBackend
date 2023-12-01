@@ -1,6 +1,7 @@
 ﻿using BlogBackend.Data;
 using BlogBackend.Exceptions;
 using BlogBackend.Models;
+using BlogBackend.Models.Comments;
 using BlogBackend.Models.DTO;
 using BlogBackend.Models.Posts;
 using BlogBackend.Services.Interfaces;
@@ -48,7 +49,7 @@ public class PostService: IPostService
                     CommunityName = post.CommunityName,
                     AddressId = post.AddressId,
                     Likes = post.Likes,
-                    HasLike = post.HasLike,
+                    HasLike = false,
                     CommentsCount = post.CommentsCount,
                     Tags = GetTagsList(post)
                 }).ToList(),
@@ -81,9 +82,9 @@ public class PostService: IPostService
             CommunityName = null,
             AddressId = post.AddressId,
             Likes = 0,
-            HasLike = false,
             CommentsCount = 0,
-            Tags = post.Tags
+            Tags = post.Tags,
+            Comments = new List<Comment>()
         };
         
         _dbContext.Posts.Add(newPost);

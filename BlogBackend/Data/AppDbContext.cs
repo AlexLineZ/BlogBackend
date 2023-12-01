@@ -1,4 +1,5 @@
 ﻿using BlogBackend.Models;
+using BlogBackend.Models.Comments;
 using BlogBackend.Models.DTO;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,6 +14,7 @@ public class AppDbContext: DbContext
     public DbSet<Community> Communities { get; set; }
     public DbSet<Tag> Tags { get; set; }
     public DbSet<Post> Posts { get; set; }
+    public DbSet<Comment> Comments { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
