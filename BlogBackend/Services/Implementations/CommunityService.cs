@@ -24,7 +24,7 @@ public class CommunityService : ICommunityService
         var communities = await _dbContext.Communities
             .ToListAsync();
         
-        var communityDTOs = communities.Select(c => new CommunityDto
+        var communityDtOs = communities.Select(c => new CommunityDto
         {
             Id = c.Id,
             CreateTime = c.CreateTime,
@@ -34,14 +34,14 @@ public class CommunityService : ICommunityService
             SubscribersCount = c.SubscribersCount
         }).ToList();
 
-        return communityDTOs;
+        return communityDtOs;
     }
 
     public async Task<List<CommunityUserDto>> GetUserCommunity(String token)
     {
         var user = await GetUser(token);
 
-        var communityUserDTOs = _dbContext.Communities
+        var communityUserDtOs = _dbContext.Communities
             .Where(c => c.CommunityUsers.Any(cu => cu.UserId == user.Id))
             .Select(c => new CommunityUserDto
             {
@@ -51,7 +51,7 @@ public class CommunityService : ICommunityService
             })
             .ToList();
         
-        return communityUserDTOs;
+        return communityUserDtOs;
     }
     
     public async Task<CommunityFullDto> GetCommunityById(Guid communityId)
@@ -83,7 +83,7 @@ public class CommunityService : ICommunityService
                 }
             ).ToList();
         
-        var communityDTO = new CommunityFullDto
+        var communityDto = new CommunityFullDto
         {
             Id = community.Id,
             CreateTime = community.CreateTime,
@@ -94,7 +94,7 @@ public class CommunityService : ICommunityService
             Administrators = administrators
         };
 
-        return communityDTO;
+        return communityDto;
     }
 
     public async Task CreatePost(Guid communityId, CreatePostDto post, String token)
@@ -185,7 +185,7 @@ public class CommunityService : ICommunityService
         return postGroup;
     }
 
-    public async Task<CommunityRole> GetUserRole(Guid communityId, String token)
+    public async Task<CommunityRole?> GetUserRole(Guid communityId, String token)
     {
         var user = await GetUser(token);
         var userId = user.Id;
@@ -193,6 +193,11 @@ public class CommunityService : ICommunityService
         var community = await _dbContext.Communities
             .Include(c => c.CommunityUsers)
             .FirstOrDefaultAsync(c => c.Id == communityId);
+        
+        if (community == null)
+        {
+            throw new ResourceNotFoundException("Community is not found");
+        }
 
         var userRole = community.CommunityUsers
             .Where(cu => cu.CommunityId == communityId && cu.UserId == userId)
@@ -201,7 +206,7 @@ public class CommunityService : ICommunityService
 
         if (userRole == default)
         {
-            throw new InvalidOperationException("User is not a member of the community");
+            return null;
         }
 
         return userRole;
@@ -273,13 +278,15 @@ public class CommunityService : ICommunityService
     {
         var findToken = _dbContext.Tokens.FirstOrDefault(x =>
             token == x.Token);
-        
-        if (findToken != null)
+
+        if (findToken == null)
         {
-            if (_tokenService.IsTokenFresh(findToken) == false)
-            {
-                throw new InvalidOperationException("Token expired");
-            }
+            throw new InvalidOperationException("Token is not found");
+        }
+        
+        if (_tokenService.IsTokenFresh(findToken) == false)
+        {
+            throw new InvalidOperationException("Token expired");
         }
         
         var user = _dbContext.Users.FirstOrDefault(u => u.Id == findToken.UserId);
