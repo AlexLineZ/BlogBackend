@@ -168,7 +168,15 @@ public class CommunityService : ICommunityService
                 Likes = post.Likes,
                 HasLike = false,
                 CommentsCount = post.CommentsCount,
-                Tags = GetTagsList(post)
+                Tags = _dbContext.Tags
+                    .Where(tag => post.Tags.Contains(tag.Id))
+                    .Select(tag => new TagDto
+                    {
+                        Id = tag.Id,
+                        CreateTime = tag.CreateTime,
+                        Name = tag.Name
+                    })
+                    .ToList(),
             }).ToList(),
                 
             Pagination = new PageInfoModel { Count = size, Size = filteredPosts.Count(), Current = page},
@@ -291,21 +299,6 @@ public class CommunityService : ICommunityService
     private IQueryable<Post> Paginate(IQueryable<Post> posts, int page, int size)
     {
         return posts.Skip((page - 1) * size).Take(size);
-    }
-    
-    private List<TagDto> GetTagsList(Post post)
-    {
-        var tagDtos = _dbContext.Tags
-            .Where(tag => post.Tags.Contains(tag.Id))
-            .Select(tag => new TagDto
-            {
-                Id = tag.Id,
-                CreateTime = tag.CreateTime,
-                Name = tag.Name
-            })
-            .ToList();
-
-        return tagDtos;
     }
 }
 

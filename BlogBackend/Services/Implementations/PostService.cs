@@ -55,7 +55,15 @@ public class PostService: IPostService
                         Likes = post.Likes,
                         HasLike = false,
                         CommentsCount = post.Comments.Count,
-                        Tags = GetTagsList(post)
+                        Tags = _dbContext.Tags
+                            .Where(tag => post.Tags.Contains(tag.Id))
+                            .Select(tag => new TagDto
+                            {
+                                Id = tag.Id,
+                                CreateTime = tag.CreateTime,
+                                Name = tag.Name
+                            })
+                            .ToList()
                     })
                     .ToListAsync(),
                 
@@ -143,14 +151,20 @@ public class PostService: IPostService
             Likes = post.Likes,
             HasLike = hasLike,
             CommentsCount = post.Comments.Count,
-            Tags = GetTagsList(post),
+            Tags = _dbContext.Tags
+                .Where(tag => post.Tags.Contains(tag.Id))
+                .Select(tag => new TagDto
+                {
+                    Id = tag.Id,
+                    CreateTime = tag.CreateTime,
+                    Name = tag.Name
+                })
+                .ToList(),
             Comments = comments
         };
 
         return postDto;
     }
-
-
 
     public async Task LikePost(Guid postId, String token)
     {

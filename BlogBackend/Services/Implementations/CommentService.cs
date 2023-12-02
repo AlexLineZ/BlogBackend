@@ -83,6 +83,7 @@ public class CommentService: ICommentService
             post.Comments.Add(newComment);
         }
 
+        post.CommentsCount++;
         await _dbContext.SaveChangesAsync();
     }
 
@@ -127,6 +128,11 @@ public class CommentService: ICommentService
         {
             throw new UnauthorizedAccessException("You do not have permission to delete this comment");
         }
+
+        if (commentToDelete.DeleteDate != null)
+        {
+            throw new InvalidOperationException("This comment has already been deleted");
+        }
         
         if (commentToDelete.ParentId == null && commentToDelete.SubCommentsList.Count == 0)
         {
@@ -137,6 +143,12 @@ public class CommentService: ICommentService
             commentToDelete.DeleteDate = DateTime.UtcNow;
         }
         
+        var post = await _dbContext.Posts.FindAsync(commentToDelete.PostId);
+        if (post == null)
+        {
+            throw new ResourceNotFoundException("Post not found");
+        }
+        post.CommentsCount--;
         await _dbContext.SaveChangesAsync();
     }
 
