@@ -46,6 +46,8 @@ public class CommentController: ControllerBase
     [Route("comment/{id}")]
     public async Task<IActionResult> DeleteComment(Guid id)
     {
-        return Ok(new {tree = "test"});
+        var token = Request.Headers["Authorization"].ToString().Substring(7);
+        await _commentService.DeleteComment(id, token);
+        return Ok();
     }
 }
