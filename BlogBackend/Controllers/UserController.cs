@@ -1,6 +1,7 @@
 ﻿using BlogBackend.Data.Models.User;
 using BlogBackend.Models;
 using BlogBackend.Services.Interfaces;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BlogBackend.Controllers;
@@ -45,16 +46,24 @@ public class UserController : ControllerBase
     [Route("logout")]
     public async Task<IActionResult> Logout()
     {
-        var token = Request.Headers["Authorization"].ToString().Substring(7);
+        var token = await HttpContext.GetTokenAsync("access_token");
+        if (string.IsNullOrEmpty(token))
+        {
+            throw new UnauthorizedAccessException();
+        }
         await _userService.Logout(token);
         return Ok();
     }
 
     [HttpGet]
     [Route("profile")]
-    public IActionResult GetProfile() //поправить это!
+    public async Task<IActionResult> GetProfile()
     {
-        var token = Request.Headers["Authorization"].ToString().Substring(7);
+        var token = await HttpContext.GetTokenAsync("access_token");
+        if (string.IsNullOrEmpty(token))
+        {
+            throw new UnauthorizedAccessException();
+        }
         var response = _userService.GetProfile(token);
         return Ok(response);
     }
@@ -68,7 +77,11 @@ public class UserController : ControllerBase
             return BadRequest();
         }
         
-        var token = Request.Headers["Authorization"].ToString().Substring(7);
+        var token = await HttpContext.GetTokenAsync("access_token");
+        if (string.IsNullOrEmpty(token))
+        {
+            throw new UnauthorizedAccessException();
+        }
         await _userService.PutProfile(model, token);
         return Ok();
     }

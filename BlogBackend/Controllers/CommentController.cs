@@ -1,5 +1,6 @@
 ﻿using BlogBackend.Models.Comments;
 using BlogBackend.Services.Interfaces;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BlogBackend.Controllers;
@@ -28,7 +29,11 @@ public class CommentController: ControllerBase
     [Route("post/{id}/comment")]
     public async Task<IActionResult> AddComment(Guid id, [FromBody] CreateCommentDto comment)
     {
-        var token = Request.Headers["Authorization"].ToString().Substring(7);
+        var token = await HttpContext.GetTokenAsync("access_token");
+        if (string.IsNullOrEmpty(token))
+        {
+            throw new UnauthorizedAccessException();
+        }
         await _commentService.CreateComment(comment, id, token);
         return Ok();
     }
@@ -37,7 +42,11 @@ public class CommentController: ControllerBase
     [Route("comment/{id}")]
     public async Task<IActionResult> EditComment(Guid id, [FromBody] UpdateCommentDto comment)
     {
-        var token = Request.Headers["Authorization"].ToString().Substring(7);
+        var token = await HttpContext.GetTokenAsync("access_token");
+        if (string.IsNullOrEmpty(token))
+        {
+            throw new UnauthorizedAccessException();
+        }
         await _commentService.UpdateComment(id, comment, token);
         return Ok();
     }
@@ -46,7 +55,11 @@ public class CommentController: ControllerBase
     [Route("comment/{id}")]
     public async Task<IActionResult> DeleteComment(Guid id)
     {
-        var token = Request.Headers["Authorization"].ToString().Substring(7);
+        var token = await HttpContext.GetTokenAsync("access_token");
+        if (string.IsNullOrEmpty(token))
+        {
+            throw new UnauthorizedAccessException();
+        }
         await _commentService.DeleteComment(id, token);
         return Ok();
     }

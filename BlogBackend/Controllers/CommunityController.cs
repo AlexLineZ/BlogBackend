@@ -1,6 +1,7 @@
 ﻿using BlogBackend.Models.DTO;
 using BlogBackend.Models.Posts;
 using BlogBackend.Services.Interfaces;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Extensions;
 
@@ -28,7 +29,11 @@ public class CommunityController: ControllerBase
     [Route("my")]
     public async Task<IActionResult> GetUserCommunityList()
     {
-        var token = Request.Headers["Authorization"].ToString().Substring(7);
+        var token = await HttpContext.GetTokenAsync("access_token");
+        if (string.IsNullOrEmpty(token))
+        {
+            throw new UnauthorizedAccessException();
+        }
         var communityUserList = await _communityService.GetUserCommunity(token);
         return Ok(communityUserList);
     }
@@ -58,7 +63,11 @@ public class CommunityController: ControllerBase
     [Route("{id}/post")]
     public async Task<IActionResult> CreatePost(Guid id, CreatePostDto post)
     {
-        var token = Request.Headers["Authorization"].ToString().Substring(7);
+        var token = await HttpContext.GetTokenAsync("access_token");
+        if (string.IsNullOrEmpty(token))
+        {
+            throw new UnauthorizedAccessException();
+        }
         await _communityService.CreatePost(id, post, token);
         return Ok();
     }
@@ -67,7 +76,11 @@ public class CommunityController: ControllerBase
     [Route("{id}/role")]
     public async Task<IActionResult> GetUserRole(Guid id)
     {
-        var token = Request.Headers["Authorization"].ToString().Substring(7);
+        var token = await HttpContext.GetTokenAsync("access_token");
+        if (string.IsNullOrEmpty(token))
+        {
+            throw new UnauthorizedAccessException();
+        }
         var userRole = await _communityService.GetUserRole(id, token);
         return Ok(userRole);
     }
@@ -76,7 +89,11 @@ public class CommunityController: ControllerBase
     [Route("{id}/subscribe")]
     public async Task<IActionResult> SubscribeCommunity(Guid id)
     {
-        var token = Request.Headers["Authorization"].ToString().Substring(7);
+        var token = await HttpContext.GetTokenAsync("access_token");
+        if (string.IsNullOrEmpty(token))
+        {
+            throw new UnauthorizedAccessException();
+        }
         await _communityService.Subscribe(id, token);
         return Ok();
     }
@@ -85,7 +102,11 @@ public class CommunityController: ControllerBase
     [Route("{id}/unsubscribe")]
     public async Task<IActionResult> UnsubscribeCommunity(Guid id)
     {
-        var token = Request.Headers["Authorization"].ToString().Substring(7);
+        var token = await HttpContext.GetTokenAsync("access_token");
+        if (string.IsNullOrEmpty(token))
+        {
+            throw new UnauthorizedAccessException();
+        }
         await _communityService.Unsubscribe(id, token);
         return Ok();
     }

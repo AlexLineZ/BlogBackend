@@ -27,12 +27,12 @@ public class Community
     [Required]
     public List<CommunityUser> CommunityUsers { get; set; }
     
-    public List<Guid> Posts { get; set; }
+    public List<Post> Posts { get; set; }
     
     public Community() {}
 
     public Community(Guid id, DateTime createTime, String name, String description, Boolean isClosed,
-        Int32 subscribersCount, List<CommunityUser> communityUsers, List<Guid> posts)
+        Int32 subscribersCount, List<CommunityUser> communityUsers, List<Post> posts)
     {
         Id = id;
         CreateTime = createTime;

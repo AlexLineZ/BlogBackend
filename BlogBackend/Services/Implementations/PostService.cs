@@ -21,45 +21,47 @@ public class PostService: IPostService
         _tokenService = tokenService;
     }
 
-    public async Task<PostGroup> GetPostList(List<Guid>? tags, string? author, int? min, int? max, //ПОЛЬЗОВАТЕЛЬ
+    public async Task<PostGroup> GetPostList(List<Guid>? tags, string? author, int? min, int? max,
         PostSorting? sorting, bool onlyMyCommunities, int page, int size)
     {
         try
         {
-            var allPosts = await _dbContext.Posts
+            var posts = _dbContext.Posts
                 .Include(p => p.Comments)
-                .ToListAsync();
+                .AsQueryable();
             
-            var filteredPosts = ApplyFilters(allPosts, tags, author, min, max, onlyMyCommunities);
+            posts = ApplyFilters(posts, tags, author, min, max, onlyMyCommunities);
             
-            filteredPosts = ApplySorting(filteredPosts, sorting);
+            posts = ApplySorting(posts, sorting);
             
-            var paginatedPosts = Paginate(filteredPosts, page, size);
-            
+            var paginatedPosts = Paginate(posts, page, size);
+
             var postGroup = new PostGroup
             {
-                Posts = paginatedPosts.Select(post => new PostDto
-                {
-                    Id = post.Id,
-                    CreateTime = post.CreateTime,
-                    Title = post.Title,
-                    Description = post.Description,
-                    ReadingTime = post.ReadingTime,
-                    Image = post.Image,
-                    AuthorId = post.AuthorId,
-                    Author = post.Author,
-                    CommunityId = post.CommunityId,
-                    CommunityName = post.CommunityName,
-                    AddressId = post.AddressId,
-                    Likes = post.Likes,
-                    HasLike = false,
-                    CommentsCount = post.Comments.Count,
-                    Tags = GetTagsList(post)
-                }).ToList(),
+                Posts = await paginatedPosts
+                    .Select(post => new PostDto
+                    {
+                        Id = post.Id,
+                        CreateTime = post.CreateTime,
+                        Title = post.Title,
+                        Description = post.Description,
+                        ReadingTime = post.ReadingTime,
+                        Image = post.Image,
+                        AuthorId = post.AuthorId,
+                        Author = post.Author,
+                        CommunityId = post.CommunityId,
+                        CommunityName = post.CommunityName,
+                        AddressId = post.AddressId,
+                        Likes = post.Likes,
+                        HasLike = false,
+                        CommentsCount = post.Comments.Count,
+                        Tags = GetTagsList(post)
+                    })
+                    .ToListAsync(),
                 
-                Pagination = new PageInfoModel { Count = size, Size = filteredPosts.Count(), Current = page},
+                Pagination = new PageInfoModel { Count = size, Size = await posts.CountAsync(), Current = page },
             };
-            
+
             return postGroup;
         }
         catch (Exception ex)
@@ -196,7 +198,7 @@ public class PostService: IPostService
         await _dbContext.SaveChangesAsync();
     }
 
-    private IQueryable<Post> ApplyFilters(List<Post> posts, List<Guid>? tags, string? author,
+    private IQueryable<Post> ApplyFilters(IQueryable<Post> posts, List<Guid>? tags, string? author,
         int? minReadingTime, int? maxReadingTime, bool onlyMyCommunities)
     {
         var filteredPosts = posts.AsQueryable();

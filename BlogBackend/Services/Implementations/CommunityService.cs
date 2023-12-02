@@ -127,7 +127,7 @@ public class CommunityService : ICommunityService
         };
         
         _dbContext.Posts.Add(newPost);
-        community.Posts.Add(newPost.Id);
+        community.Posts.Add(newPost);
         user.Posts.Add(newPost.Id);
         await _dbContext.SaveChangesAsync();
     }
@@ -136,22 +136,15 @@ public class CommunityService : ICommunityService
         PostSorting? sorting, Int32 page, Int32 size)
     {
         var community = await _dbContext.Communities
+            .Include(c => c.Posts)
             .FirstOrDefaultAsync(c => c.Id == communityId);
         
         if (community == null)
         {
             throw new ResourceNotFoundException("Community is not found");
         }
-        
-        var posts = new List<Post>();
-        community.Posts.ForEach(postId =>
-        {
-            var post = _dbContext.Posts.FirstOrDefault(p => p.Id == postId);
-            if (post != null)
-            {
-                posts.Add(post);
-            }
-        });
+
+        var posts = community.Posts;
 
         var filteredPosts = ApplyFilters(posts, tags);
         filteredPosts = ApplySorting(filteredPosts, sorting);

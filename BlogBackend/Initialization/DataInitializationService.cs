@@ -30,7 +30,7 @@ public class DataInitializationService : IHostedService
                     IsClosed = true,
                     SubscribersCount = 0,
                     CommunityUsers = new List<CommunityUser>(),
-                    Posts = new List<Guid>()
+                    Posts = new List<Post>()
                 });
                 
                 dbContext.Communities.Add(new Community
@@ -42,7 +42,7 @@ public class DataInitializationService : IHostedService
                     IsClosed = false,
                     SubscribersCount = 0,
                     CommunityUsers = new List<CommunityUser>(),
-                    Posts = new List<Guid>()
+                    Posts = new List<Post>()
                 });
 
                 dbContext.Communities.Add(new Community
@@ -56,7 +56,7 @@ public class DataInitializationService : IHostedService
                     IsClosed = false,
                     SubscribersCount = 0,
                     CommunityUsers = new List<CommunityUser>(),
-                    Posts = new List<Guid>()
+                    Posts = new List<Post>()
                 });
                 
                 await dbContext.SaveChangesAsync();
