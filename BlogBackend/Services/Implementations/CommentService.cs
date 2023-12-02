@@ -1,5 +1,6 @@
 ﻿using BlogBackend.Data;
 using BlogBackend.Exceptions;
+using BlogBackend.Models;
 using BlogBackend.Models.Comments;
 using BlogBackend.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -111,8 +112,75 @@ public class CommentService: ICommentService
 
     public async Task DeleteComment(Guid commentId, string token)
     {
-        throw new NotImplementedException();
+        var user = await _tokenService.GetUser(token);
+        
+        var commentToDelete = await _dbContext.Comments
+            .Include(c => c.SubCommentsList)
+            .FirstOrDefaultAsync(c => c.Id == commentId);
+        
+        if (commentToDelete == null)
+        {
+            throw new ResourceNotFoundException("Comment not found");
+        }
+        
+        if (commentToDelete.AuthorId != user.Id && !await IsUserCommunityAdmin(user, commentToDelete.PostId))
+        {
+            throw new UnauthorizedAccessException("You do not have permission to delete this comment");
+        }
+        
+        if (commentToDelete.ParentId == null && commentToDelete.SubCommentsList.Count == 0)
+        {
+            _dbContext.Comments.Remove(commentToDelete);
+        }
+        else
+        {
+            commentToDelete.DeleteDate = DateTime.UtcNow;
+        }
+        
+        await _dbContext.SaveChangesAsync();
     }
+
+    private async Task<bool> IsUserCommunityAdmin(User user, Guid? postId)
+    {
+        if (postId == null)
+        {
+            return false;
+        }
+        
+        var post = await _dbContext.Posts.FirstOrDefaultAsync(p => p.Id == postId);
+
+        if (post == null)
+        {
+            throw new ResourceNotFoundException("Post not found");
+        }
+
+        if (post.CommunityId == null)
+        {
+            return false;
+        }
+        
+        var community = await _dbContext.Communities
+            .Include(c => c.CommunityUsers)
+            .FirstOrDefaultAsync(c => c.Id == post.CommunityId);
+        
+        if (community == null)
+        {
+            throw new ResourceNotFoundException("Community not found");
+        }
+        
+        var userRole = community.CommunityUsers
+            .Where(cu => cu.CommunityId == community.Id && cu.UserId == user.Id)
+            .Select(cu => cu.Role)
+            .FirstOrDefault();
+
+        if (userRole == default)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     
     private List<CommentDto> BuildCommentTree(Guid commentId)
     {
@@ -120,6 +188,11 @@ public class CommentService: ICommentService
             .Include(c => c.SubCommentsList)
             .FirstOrDefault(c => c.Id == commentId);
 
+        if (comment == null)
+        {
+            throw new ResourceNotFoundException("Comment not found");
+        }
+        
         var commentTree = new List<CommentDto>
         {
             MapCommentToDto(comment)
