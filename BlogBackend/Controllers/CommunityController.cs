@@ -56,7 +56,8 @@ public class CommunityController: ControllerBase
         [FromQuery] Int32 size = 5
     )
     {
-        var postGroup = await _communityService.GetCommunityPost(id, tags, sorting, page, size);
+        var token = await HttpContext.GetTokenAsync("access_token");
+        var postGroup = await _communityService.GetCommunityPost(id, tags, sorting, page, size, token);
         return Ok(postGroup);
     }
 
@@ -69,9 +70,9 @@ public class CommunityController: ControllerBase
         {
             throw new UnauthorizedAccessException();
         }
-        await _communityService.CreatePost(id, post, token);
-        return Ok();
-    }
+        var postId = await _communityService.CreatePost(id, post, token);
+        return Ok(postId);
+    } 
     
     [HttpGet]
     [Route("{id}/role")]

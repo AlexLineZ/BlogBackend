@@ -5,6 +5,7 @@ using BlogBackend.Models.DTO;
 using BlogBackend.Models.Posts;
 using BlogBackend.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 namespace BlogBackend.Services.Implementations;
 
@@ -97,7 +98,7 @@ public class CommunityService : ICommunityService
         return communityDto;
     }
 
-    public async Task CreatePost(Guid communityId, CreatePostDto post, String token)
+    public async Task<Guid> CreatePost(Guid communityId, CreatePostDto post, String token)
     {
         var user = await _tokenService.GetUser(token);
         
@@ -130,10 +131,11 @@ public class CommunityService : ICommunityService
         community.Posts.Add(newPost);
         user.Posts.Add(newPost.Id);
         await _dbContext.SaveChangesAsync();
+        return newPost.Id;
     }
 
     public async Task<PostGroup> GetCommunityPost(Guid communityId, List<Guid>? tags,
-        PostSorting? sorting, Int32 page, Int32 size)
+        PostSorting? sorting, Int32 page, Int32 size, string? token)
     {
         var community = await _dbContext.Communities
             .Include(c => c.Posts)
@@ -144,9 +146,16 @@ public class CommunityService : ICommunityService
             throw new ResourceNotFoundException("Community is not found");
         }
 
+        User? user = null;
+            
+        if (!token.IsNullOrEmpty())
+        {
+            user = await GetUserOrNull(token);
+        }
+        
         var posts = community.Posts;
 
-        var filteredPosts = ApplyFilters(posts, tags);
+        var filteredPosts = ApplyFilters(posts, tags, user, community);
         filteredPosts = ApplySorting(filteredPosts, sorting);
         var paginatedPosts = Paginate(filteredPosts, page, size);
         
@@ -272,9 +281,24 @@ public class CommunityService : ICommunityService
         await _dbContext.SaveChangesAsync();
     }
 
-    private IQueryable<Post> ApplyFilters(List<Post> posts, List<Guid>? tags)
+    private IQueryable<Post> ApplyFilters(List<Post> posts, List<Guid>? tags, User? user, Community community)
     {
         var filteredPosts = posts.AsQueryable();
+
+        if (user == null && community.IsClosed)
+        {
+            return Enumerable.Empty<Post>().AsQueryable();
+        }
+
+        if (user != null && community.IsClosed)
+        {
+            var isUserSubscribed = user.Communities.Any(c => c == community.Id);
+
+            if (!isUserSubscribed)
+            {
+                return Enumerable.Empty<Post>().AsQueryable();
+            }
+        }
         
         if (tags != null && tags.Any())
         {
@@ -299,6 +323,26 @@ public class CommunityService : ICommunityService
     private IQueryable<Post> Paginate(IQueryable<Post> posts, int page, int size)
     {
         return posts.Skip((page - 1) * size).Take(size);
+    }
+
+    private async Task<User?> GetUserOrNull(string? token)
+    {
+        var findToken = _dbContext.Tokens.FirstOrDefault(x =>
+            token == x.Token);
+
+        if (findToken == null)
+        {
+            return null;
+        }
+        
+        if (_tokenService.IsTokenFresh(findToken) == false)
+        {
+            return null;
+        }
+        
+        var user = _dbContext.Users.FirstOrDefault(u => u.Id == findToken.UserId);
+
+        return user;
     }
 }
 

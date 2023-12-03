@@ -2,6 +2,7 @@
 
 public enum CommunityRole
 {
+    Default,
     Administrator,
     Subscriber
 }

@@ -41,7 +41,7 @@ public class PostService: IPostService
             posts = ApplyFilters(posts, tags, author, min, max, onlyMyCommunities, user);
             
             posts = ApplySorting(posts, sorting);
-            
+
             var paginatedPosts = Paginate(posts, page, size);
 
             var postGroup = new PostGroup
@@ -61,7 +61,7 @@ public class PostService: IPostService
                         CommunityName = post.CommunityName,
                         AddressId = post.AddressId,
                         Likes = post.Likes,
-                        HasLike = false,
+                        HasLike = user != null && user.Posts.Contains(post.Id),
                         CommentsCount = post.Comments.Count,
                         Tags = _dbContext.Tags
                             .Where(tag => post.Tags.Contains(tag.Id))
@@ -86,7 +86,7 @@ public class PostService: IPostService
         }
     }
 
-    public async Task CreatePost(CreatePostDto post, String token)
+    public async Task<Guid> CreatePost(CreatePostDto post, String token)
     {
         var user = await _tokenService.GetUser(token);
         
@@ -111,9 +111,10 @@ public class PostService: IPostService
         _dbContext.Posts.Add(newPost);
         user.Posts.Add(newPost.Id);
         await _dbContext.SaveChangesAsync();
+        return newPost.Id;
     }
 
-    public async Task<PostFullDto> GetPost(Guid postId, string token)
+    public async Task<PostFullDto> GetPost(Guid postId, string? token)
     {
         var post = await _dbContext.Posts
             .Include(p => p.Comments)
@@ -123,10 +124,15 @@ public class PostService: IPostService
         {
             throw new ResourceNotFoundException("Post not found");
         }
-        
-        var user = await _tokenService.GetUser(token);
-        
-        var hasLike = user.Likes.Contains(postId);
+
+        User? user = null;
+            
+        if (!token.IsNullOrEmpty())
+        {
+            user = await GetUserOrNull(token);
+        }
+
+        var hasLike = user != null && user.Likes.Contains(postId);
 
         var comments = post.Comments
             .Where(c => c.ParentId == null)
@@ -247,8 +253,27 @@ public class PostService: IPostService
         
         if (onlyMyCommunities && user != null)
         {
-            filteredPosts = filteredPosts.Where(p => p.CommunityId == null || user.Communities.Contains(p.CommunityId.Value));
+            filteredPosts = filteredPosts.Where(p => p.CommunityId == null 
+                                                     || user.Communities.Contains(p.CommunityId.Value));
         }
+
+        if (!onlyMyCommunities && user != null)
+        {
+            filteredPosts = filteredPosts
+                .Where(post =>
+                    !user.Communities.Any(cs => cs == post.CommunityId.Value)
+                );
+        }
+
+        if (!onlyMyCommunities && user == null)
+        {
+            filteredPosts = filteredPosts
+                .Where(postGuid => !_dbContext.Communities
+                    .Where(community => community.Id == postGuid.CommunityId)
+                    .Any(community => community.IsClosed)
+                );
+        }
+
 
         return filteredPosts;
     }
@@ -288,5 +313,25 @@ public class PostService: IPostService
         }
         
         return commentTree;
+    }
+    
+    private async Task<User?> GetUserOrNull(string? token)
+    {
+        var findToken = _dbContext.Tokens.FirstOrDefault(x =>
+            token == x.Token);
+
+        if (findToken == null)
+        {
+            return null;
+        }
+        
+        if (_tokenService.IsTokenFresh(findToken) == false)
+        {
+            return null;
+        }
+        
+        var user = _dbContext.Users.FirstOrDefault(u => u.Id == findToken.UserId);
+
+        return user;
     }
 }
