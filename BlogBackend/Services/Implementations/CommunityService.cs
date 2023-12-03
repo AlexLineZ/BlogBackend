@@ -187,7 +187,7 @@ public class CommunityService : ICommunityService
                 CommunityName = post.CommunityName,
                 AddressId = post.AddressId,
                 Likes = post.Likes,
-                HasLike = false,
+                HasLike = user != null && user.Likes.Any(like => like == post.Id),
                 CommentsCount = post.CommentsCount,
                 Tags = _dbContext.Tags
                     .Where(tag => post.Tags.Contains(tag.Id))
