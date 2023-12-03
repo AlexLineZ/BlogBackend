@@ -63,7 +63,7 @@ public class CommunityService : ICommunityService
 
         if (community == null)
         {
-            throw new ResourceNotFoundException("Community is not found");
+            throw new ResourceNotFoundException($"Community with id: {communityId} is not found");
         }
 
         var administrators =  community.CommunityUsers
@@ -103,11 +103,23 @@ public class CommunityService : ICommunityService
         var user = await _tokenService.GetUser(token);
         
         var community = await _dbContext.Communities
+            .Include(c => c.CommunityUsers)
             .FirstOrDefaultAsync(c => communityId == c.Id);
         
         if (community == null)
         {
-            throw new ResourceNotFoundException("Community is not found");
+            throw new ResourceNotFoundException($"Community with id: {communityId} is not found");
+        }
+        
+        var userRole = community.CommunityUsers
+            .Where(cu => cu.CommunityId == communityId && cu.UserId == user.Id)
+            .Select(cu => cu.Role)
+            .FirstOrDefault();
+        
+        if (userRole != CommunityRole.Administrator || userRole == default)
+        {
+            throw new ResourceNotAccessException($"You are not administrator " +
+                                                 $"of community with id: {communityId}");
         }
         
         var newPost = new Post {
@@ -143,7 +155,7 @@ public class CommunityService : ICommunityService
         
         if (community == null)
         {
-            throw new ResourceNotFoundException("Community is not found");
+            throw new ResourceNotFoundException($"Community with id: {communityId} is not found");
         }
 
         User? user = null;
@@ -204,7 +216,7 @@ public class CommunityService : ICommunityService
         
         if (community == null)
         {
-            throw new ResourceNotFoundException("Community is not found");
+            throw new ResourceNotFoundException($"Community with id: {communityId} is not found");
         }
 
         var userRole = community.CommunityUsers
@@ -230,7 +242,7 @@ public class CommunityService : ICommunityService
 
         if (community == null)
         {
-            throw new ResourceNotFoundException("Community is not found");
+            throw new ResourceNotFoundException($"Community with id: {communityId} is not found");
         }
         
         var existingSubscription = community.CommunityUsers
@@ -238,7 +250,8 @@ public class CommunityService : ICommunityService
 
         if (existingSubscription != null)
         {
-            throw new InvalidOperationException("User is already subscribed to this community");
+            throw new InvalidOperationException("User is already subscribed" +
+                                                $" to community with id: {communityId}");
         }
         
         var newSubscription = new CommunityUser
@@ -264,7 +277,7 @@ public class CommunityService : ICommunityService
         
         if (community == null)
         {
-            throw new ResourceNotFoundException("Community is not found");
+            throw new ResourceNotFoundException($"Community with id: {communityId} is not found");
         }
         
         var existingSubscription = community.CommunityUsers
@@ -272,7 +285,7 @@ public class CommunityService : ICommunityService
 
         if (existingSubscription == null)
         {
-            throw new InvalidOperationException("User is not subscribed to this community");
+            throw new InvalidOperationException($"User is not subscribed to community with id: {communityId}");
         }
         
         community.CommunityUsers.Remove(existingSubscription);
@@ -287,7 +300,8 @@ public class CommunityService : ICommunityService
 
         if (user == null && community.IsClosed)
         {
-            return Enumerable.Empty<Post>().AsQueryable();
+            throw new ResourceNotAccessException($"User is not authenticated and " +
+                                                 $"community with id: {community.Id} is closed");
         }
 
         if (user != null && community.IsClosed)
@@ -296,7 +310,8 @@ public class CommunityService : ICommunityService
 
             if (!isUserSubscribed)
             {
-                return Enumerable.Empty<Post>().AsQueryable();
+                throw new ResourceNotAccessException("User is not subscribed and " +
+                    $"community with id: {community.Id} is closed");
             }
         }
         

@@ -30,7 +30,7 @@ public class UserService: IUserService
 
         if (isUserRegistered != null)
         {
-            throw new InvalidCredentialException("This Email already registered");
+            throw new InvalidCredentialException($"Email {model.Email} already registered");
         }
         
         var user = new User(

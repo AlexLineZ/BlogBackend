@@ -15,7 +15,7 @@ public static class UserHelper
         var key = Encoding.ASCII.GetBytes(configuration["Jwt:Secret"]!);
         var tokenDescriptor = new SecurityTokenDescriptor
         {
-            Subject = new ClaimsIdentity(new[] { new Claim("id", user.Id.ToString()) }), //можно не хардкодить
+            Subject = new ClaimsIdentity(new[] { new Claim("id", user.Id.ToString()) }),
             Expires = DateTime.UtcNow.AddDays(7),
             SigningCredentials = new SigningCredentials(
                 new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)

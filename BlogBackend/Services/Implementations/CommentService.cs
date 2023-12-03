@@ -26,12 +26,12 @@ public class CommentService: ICommentService
 
         if (rootComment == null)
         {
-            throw new ResourceNotFoundException("Comment not found");
+            throw new ResourceNotFoundException($"Comment with id: {commentId} not found");
         }
 
         if (rootComment.ParentId != null)
         {
-            throw new InvalidOperationException("Comment is not a root comment");
+            throw new InvalidOperationException($"Comment with id: {commentId} is not a root comment");
         }
 
         var commentTree = BuildCommentTree(rootComment.Id);
@@ -47,7 +47,7 @@ public class CommentService: ICommentService
         var post = await _dbContext.Posts.FindAsync(postId);
         if (post == null)
         {
-            throw new ResourceNotFoundException("Post not found");
+            throw new ResourceNotFoundException($"Post with id: {postId} not found");
         }
 
         var newComment = new Comment
@@ -95,14 +95,15 @@ public class CommentService: ICommentService
 
         if (existingComment == null)
         {
-            throw new ResourceNotFoundException("Comment not found");
+            throw new ResourceNotFoundException($"Comment with id: {commentId} not found");
         }
 
         var user = await _tokenService.GetUser(token);
 
         if (existingComment.AuthorId != user.Id)
         {
-            throw new UnauthorizedAccessException("You do not have permission to update this comment");
+            throw new UnauthorizedAccessException($"You do not have permission " +
+                                                  $"to update comment with id: {commentId}");
         }
 
         existingComment.Content = comment.Content;
@@ -121,17 +122,18 @@ public class CommentService: ICommentService
         
         if (commentToDelete == null)
         {
-            throw new ResourceNotFoundException("Comment not found");
+            throw new ResourceNotFoundException($"Comment with id: {commentId} not found");
         }
         
         if (commentToDelete.AuthorId != user.Id && !await IsUserCommunityAdmin(user, commentToDelete.PostId))
         {
-            throw new UnauthorizedAccessException("You do not have permission to delete this comment");
+            throw new UnauthorizedAccessException($"You do not have permission " +
+                                                  $"to delete comment with id: {commentId}");
         }
 
         if (commentToDelete.DeleteDate != null)
         {
-            throw new InvalidOperationException("This comment has already been deleted");
+            throw new InvalidOperationException($"Comment with id: {commentId} has already been deleted");
         }
         
         if (commentToDelete.ParentId == null && commentToDelete.SubCommentsList.Count == 0)
@@ -146,7 +148,7 @@ public class CommentService: ICommentService
         var post = await _dbContext.Posts.FindAsync(commentToDelete.PostId);
         if (post == null)
         {
-            throw new ResourceNotFoundException("Post not found");
+            throw new ResourceNotFoundException($"Post with id: {commentToDelete.PostId} not found");
         }
         post.CommentsCount--;
         await _dbContext.SaveChangesAsync();
@@ -163,7 +165,7 @@ public class CommentService: ICommentService
 
         if (post == null)
         {
-            throw new ResourceNotFoundException("Post not found");
+            throw new ResourceNotFoundException($"Post with id: {postId} not found");;
         }
 
         if (post.CommunityId == null)
@@ -177,7 +179,7 @@ public class CommentService: ICommentService
         
         if (community == null)
         {
-            throw new ResourceNotFoundException("Community not found");
+            throw new ResourceNotFoundException($"Community with id: {post.CommunityId} not found");
         }
         
         var userRole = community.CommunityUsers
@@ -202,7 +204,7 @@ public class CommentService: ICommentService
 
         if (comment == null)
         {
-            throw new ResourceNotFoundException("Comment not found");
+            throw new ResourceNotFoundException($"Comment with id: {commentId} not found");
         }
         
         var commentTree = new List<CommentDto>

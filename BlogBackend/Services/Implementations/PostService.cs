@@ -122,7 +122,7 @@ public class PostService: IPostService
 
         if (post == null)
         {
-            throw new ResourceNotFoundException("Post not found");
+            throw new ResourceNotFoundException($"Post with id: {postId} not found");
         }
 
         User? user = null;
@@ -188,14 +188,14 @@ public class PostService: IPostService
         
         if (post == null)
         {
-            throw new ResourceNotFoundException("Post not found");
+            throw new ResourceNotFoundException($"Post with id: {postId} not found");
         }
         
         var existingLike = user.Likes.Any(l => l == postId);
         
         if (existingLike)
         {
-            throw new InvalidOperationException("You already like this post");
+            throw new InvalidOperationException($"You already like post with id: {postId}");
         }
 
         post.Likes++;
@@ -211,14 +211,14 @@ public class PostService: IPostService
         
         if (post == null)
         {
-            throw new ResourceNotFoundException("Post not found");
+            throw new ResourceNotFoundException($"Post with id: {postId} not found");
         }
         
         var existingLike = user.Likes.Any(l => l == postId);
         
         if (!existingLike)
         {
-            throw new InvalidOperationException("You not like this post");
+            throw new InvalidOperationException($"You not like post with id: {postId}");
         }
 
         post.Likes--;
