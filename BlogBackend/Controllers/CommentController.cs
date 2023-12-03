@@ -1,6 +1,7 @@
 ﻿using BlogBackend.Models.Comments;
 using BlogBackend.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BlogBackend.Controllers;

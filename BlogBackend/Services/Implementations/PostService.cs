@@ -7,6 +7,7 @@ using BlogBackend.Models.DTO;
 using BlogBackend.Models.Posts;
 using BlogBackend.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 namespace BlogBackend.Services.Implementations;
 
@@ -22,15 +23,22 @@ public class PostService: IPostService
     }
 
     public async Task<PostGroup> GetPostList(List<Guid>? tags, string? author, int? min, int? max,
-        PostSorting? sorting, bool onlyMyCommunities, int page, int size)
+        PostSorting? sorting, bool onlyMyCommunities, int page, int size, string? token)
     {
         try
         {
+            User? user = null;
+            
+            if (!token.IsNullOrEmpty())
+            {
+                user = await _tokenService.GetUser(token);
+            }
+            
             var posts = _dbContext.Posts
                 .Include(p => p.Comments)
                 .AsQueryable();
             
-            posts = ApplyFilters(posts, tags, author, min, max, onlyMyCommunities);
+            posts = ApplyFilters(posts, tags, author, min, max, onlyMyCommunities, user);
             
             posts = ApplySorting(posts, sorting);
             
@@ -213,7 +221,7 @@ public class PostService: IPostService
     }
 
     private IQueryable<Post> ApplyFilters(IQueryable<Post> posts, List<Guid>? tags, string? author,
-        int? minReadingTime, int? maxReadingTime, bool onlyMyCommunities)
+        int? minReadingTime, int? maxReadingTime, bool onlyMyCommunities, User? user)
     {
         var filteredPosts = posts.AsQueryable();
         
@@ -237,9 +245,9 @@ public class PostService: IPostService
             filteredPosts = filteredPosts.Where(p => p.ReadingTime <= maxReadingTime.Value);
         }
         
-        if (onlyMyCommunities)
+        if (onlyMyCommunities && user != null)
         {
-            //допилить
+            filteredPosts = filteredPosts.Where(p => p.CommunityId == null || user.Communities.Contains(p.CommunityId.Value));
         }
 
         return filteredPosts;
@@ -261,22 +269,7 @@ public class PostService: IPostService
     {
         return posts.Skip((page - 1) * size).Take(size);
     }
-    
-    private List<TagDto> GetTagsList(Post post)
-    {
-        var tagDtos = _dbContext.Tags
-            .Where(tag => post.Tags.Contains(tag.Id))
-            .Select(tag => new TagDto
-            {
-                Id = tag.Id,
-                CreateTime = tag.CreateTime,
-                Name = tag.Name
-            })
-            .ToList();
 
-        return tagDtos;
-    }
-    
     private List<Comment> BuildCommentTree(Guid commentId)
     {
         var comment = _dbContext.Comments

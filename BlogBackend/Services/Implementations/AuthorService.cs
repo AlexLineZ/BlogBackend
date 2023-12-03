@@ -23,7 +23,7 @@ public class AuthorService: IAuthorService
                 BirthDate = author.BirthDate,
                 Gender = author.Gender,
                 Posts = author.Posts.Count,
-                Likes = author.Likes.Count,
+                Likes = _dbContext.Posts.Count(post => author.Likes.Contains(post.Id)),
                 Created = author.CreateTime
             })
             .ToListAsync();

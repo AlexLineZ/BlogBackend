@@ -39,7 +39,7 @@ public class User
 
     public User() { }
     public User(Guid id, string fullName, DateTime birthDate, 
-        Gender gender, string email, string phoneNumber, string password, List<Guid>? communities, List<Guid>? posts, List<Guid>? likes)
+        Gender gender, string email, string phoneNumber, string password, List<Guid> communities, List<Guid> posts, List<Guid> likes)
     {
         Id = id;
         CreateTime = DateTime.UtcNow;
