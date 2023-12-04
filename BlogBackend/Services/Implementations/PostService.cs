@@ -25,65 +25,58 @@ public class PostService: IPostService
     public async Task<PostGroup> GetPostList(List<Guid>? tags, string? author, int? min, int? max,
         PostSorting? sorting, bool onlyMyCommunities, int page, int size, string? token)
     {
-        try
+        User? user = null;
+        if (!token.IsNullOrEmpty())
         {
-            User? user = null;
+            user = await _tokenService.GetUser(token);
+        }
             
-            if (!token.IsNullOrEmpty())
-            {
-                user = await _tokenService.GetUser(token);
-            }
+        var posts = _dbContext.Posts
+            .Include(p => p.Comments)
+            .AsQueryable();
             
-            var posts = _dbContext.Posts
-                .Include(p => p.Comments)
-                .AsQueryable();
+        posts = ApplyFilters(posts, tags, author, min, max, onlyMyCommunities, user);
             
-            posts = ApplyFilters(posts, tags, author, min, max, onlyMyCommunities, user);
-            
-            posts = ApplySorting(posts, sorting);
+        posts = ApplySorting(posts, sorting);
 
-            var paginatedPosts = Paginate(posts, page, size);
+        var paginatedPosts = Paginate(posts, page, size);
 
-            var postGroup = new PostGroup
-            {
-                Posts = await paginatedPosts
-                    .Select(post => new PostDto
-                    {
-                        Id = post.Id,
-                        CreateTime = post.CreateTime,
-                        Title = post.Title,
-                        Description = post.Description,
-                        ReadingTime = post.ReadingTime,
-                        Image = post.Image,
-                        AuthorId = post.AuthorId,
-                        Author = post.Author,
-                        CommunityId = post.CommunityId,
-                        CommunityName = post.CommunityName,
-                        AddressId = post.AddressId,
-                        Likes = post.Likes,
-                        HasLike = user != null && user.Posts.Contains(post.Id),
-                        CommentsCount = post.Comments.Count,
-                        Tags = _dbContext.Tags
-                            .Where(tag => post.Tags.Contains(tag.Id))
-                            .Select(tag => new TagDto
-                            {
-                                Id = tag.Id,
-                                CreateTime = tag.CreateTime,
-                                Name = tag.Name
-                            })
-                            .ToList()
-                    })
-                    .ToListAsync(),
+        var postGroup = new PostGroup
+        {
+            Posts = await paginatedPosts
+                .Select(post => new PostDto
+                {
+                    Id = post.Id,
+                    CreateTime = post.CreateTime,
+                    Title = post.Title,
+                    Description = post.Description,
+                    ReadingTime = post.ReadingTime,
+                    Image = post.Image,
+                    AuthorId = post.AuthorId,
+                    Author = post.Author,
+                    CommunityId = post.CommunityId,
+                    CommunityName = post.CommunityName,
+                    AddressId = post.AddressId,
+                    Likes = post.Likes,
+                    HasLike = user != null && user.Posts.Contains(post.Id),
+                    CommentsCount = post.Comments.Count,
+                    Tags = _dbContext.Tags
+                        .Where(tag => post.Tags.Contains(tag.Id))
+                        .Select(tag => new TagDto
+                        {
+                            Id = tag.Id,
+                            CreateTime = tag.CreateTime,
+                            Name = tag.Name
+                        })
+                        .ToList()
+                })
+                .ToListAsync(),
                 
-                Pagination = new PageInfoModel { Count = size, Size = await posts.CountAsync(), Current = page },
-            };
+            Pagination = new PageInfoModel { Count = (int)Math.Ceiling((double)await posts.CountAsync() / size), Size = size, Current = page },
+        };
 
-            return postGroup;
-        }
-        catch (Exception ex)
-        {
-            throw new InvalidOperationException($"Error retrieving posts: {ex.Message}");
-        }
+        return postGroup;
+
     }
 
     public async Task<Guid> CreatePost(CreatePostDto post, String token)

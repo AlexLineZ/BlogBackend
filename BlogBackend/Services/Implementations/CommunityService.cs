@@ -200,7 +200,7 @@ public class CommunityService : ICommunityService
                     .ToList(),
             }).ToList(),
                 
-            Pagination = new PageInfoModel { Count = size, Size = filteredPosts.Count(), Current = page},
+            Pagination = new PageInfoModel { Count = (int)Math.Ceiling((double)filteredPosts.Count() / size), Size = size, Current = page},
         };
         
         return postGroup;

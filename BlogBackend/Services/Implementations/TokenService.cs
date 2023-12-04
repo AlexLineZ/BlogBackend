@@ -44,12 +44,12 @@ public class TokenService : ITokenService
 
         if (findToken == null)
         {
-            throw new InvalidOperationException("Token is not found");
+            throw new UnauthorizedAccessException("Token is not found");
         }
         
         if (IsTokenFresh(findToken) == false)
         {
-            throw new InvalidOperationException("Token expired");
+            throw new UnauthorizedAccessException("Token expired");
         }
         
         var user = _dbContext.Users.FirstOrDefault(u => u.Id == findToken.UserId);
