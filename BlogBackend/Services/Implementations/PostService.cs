@@ -28,7 +28,7 @@ public class PostService: IPostService
         User? user = null;
         if (!token.IsNullOrEmpty())
         {
-            user = await _tokenService.GetUser(token);
+            user = await GetUserOrNull(token);
         }
             
         var posts = _dbContext.Posts
@@ -246,24 +246,16 @@ public class PostService: IPostService
         
         if (onlyMyCommunities && user != null)
         {
-            filteredPosts = filteredPosts.Where(p => p.CommunityId == null 
-                                                     || user.Communities.Contains(p.CommunityId.Value));
+            filteredPosts = filteredPosts.Where(p =>p.CommunityId != null
+                                                    && user.Communities.Contains(p.CommunityId.Value));
         }
 
-        if (!onlyMyCommunities && user != null)
+        if (!onlyMyCommunities || (onlyMyCommunities && user == null))
         {
             filteredPosts = filteredPosts
-                .Where(post =>
-                    !user.Communities.Any(cs => cs == post.CommunityId.Value)
-                );
-        }
-
-        if (!onlyMyCommunities && user == null)
-        {
-            filteredPosts = filteredPosts
-                .Where(postGuid => !_dbContext.Communities
-                    .Where(community => community.Id == postGuid.CommunityId)
-                    .Any(community => community.IsClosed)
+                .Where(post => !_dbContext.Communities
+                    .Where(community => community.Id == post.CommunityId)
+                    .Any(community => community.IsClosed && user != null && !user.Communities.Contains(community.Id))
                 );
         }
 
