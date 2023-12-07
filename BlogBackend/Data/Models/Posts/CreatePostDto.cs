@@ -15,12 +15,12 @@ public class CreatePostDto
     [Required]
     public Int32 ReadingTime { get; set; }
     
+    [Url]
     public String Image { get; set; }
-
+    
     public Guid? AddressId { get; set; }
 
     [Required]
     [MinLength(1)]
-    
     public List<Guid> Tags { get; set; }
 }

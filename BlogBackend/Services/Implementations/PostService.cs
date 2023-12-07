@@ -58,7 +58,7 @@ public class PostService: IPostService
                     CommunityName = post.CommunityName,
                     AddressId = post.AddressId,
                     Likes = post.Likes,
-                    HasLike = user != null && user.Posts.Contains(post.Id),
+                    HasLike = user != null && user.Posts.Contains(post),
                     CommentsCount = post.Comments.Count,
                     Tags = _dbContext.Tags
                         .Where(tag => post.Tags.Contains(tag.Id))
@@ -102,7 +102,7 @@ public class PostService: IPostService
         };
         
         _dbContext.Posts.Add(newPost);
-        user.Posts.Add(newPost.Id);
+        user.Posts.Add(newPost);
         await _dbContext.SaveChangesAsync();
         return newPost.Id;
     }
@@ -286,15 +286,17 @@ public class PostService: IPostService
             .Include(c => c.SubCommentsList)
             .FirstOrDefault(c => c.Id == commentId);
 
+        if (comment == null)
+        {
+            throw new ResourceNotFoundException($"Comment with id: {commentId} not found");
+        }
+        
         var commentTree = new List<Comment> { comment };
 
-        if (comment.SubCommentsList != null)
+        foreach (var subComment in comment.SubCommentsList)
         {
-            foreach (var subComment in comment.SubCommentsList)
-            {
-                var subCommentTree = BuildCommentTree(subComment.Id);
-                commentTree.AddRange(subCommentTree);
-            }
+            var subCommentTree = BuildCommentTree(subComment.Id);
+            commentTree.AddRange(subCommentTree);
         }
         
         return commentTree;
@@ -315,7 +317,9 @@ public class PostService: IPostService
             return null;
         }
         
-        var user = _dbContext.Users.FirstOrDefault(u => u.Id == findToken.UserId);
+        var user = _dbContext.Users
+            .Include(u => u.Posts)
+            .FirstOrDefault(u => u.Id == findToken.UserId);
 
         return user;
     }

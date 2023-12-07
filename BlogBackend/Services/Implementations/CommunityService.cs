@@ -141,7 +141,7 @@ public class CommunityService : ICommunityService
         
         _dbContext.Posts.Add(newPost);
         community.Posts.Add(newPost);
-        user.Posts.Add(newPost.Id);
+        user.Posts.Add(newPost);
         await _dbContext.SaveChangesAsync();
         return newPost.Id;
     }

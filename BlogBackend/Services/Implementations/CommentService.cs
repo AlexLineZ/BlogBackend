@@ -212,13 +212,10 @@ public class CommentService: ICommentService
             MapCommentToDto(comment)
         };
 
-        if (comment.SubCommentsList != null)
+        foreach (var subComment in comment.SubCommentsList)
         {
-            foreach (var subComment in comment.SubCommentsList)
-            {
-                var subCommentTree = BuildCommentTree(subComment.Id);
-                commentTree.AddRange(subCommentTree);
-            }
+            var subCommentTree = BuildCommentTree(subComment.Id);
+            commentTree.AddRange(subCommentTree);
         }
 
         return commentTree;

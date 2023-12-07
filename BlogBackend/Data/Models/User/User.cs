@@ -33,13 +33,14 @@ public class User
     
     public List<Guid> Communities { get; set; }
     
-    public List<Guid> Posts { get; set; }
+    public List<Post> Posts { get; set; }
     
     public List<Guid> Likes { get; set; }
 
     public User() { }
     public User(Guid id, string fullName, DateTime birthDate, 
-        Gender gender, string email, string phoneNumber, string password, List<Guid> communities, List<Guid> posts, List<Guid> likes)
+        Gender gender, string email, string phoneNumber, string password,
+        List<Guid> communities, List<Post> posts, List<Guid> likes)
     {
         Id = id;
         CreateTime = DateTime.UtcNow;

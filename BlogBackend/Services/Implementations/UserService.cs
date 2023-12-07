@@ -42,7 +42,7 @@ public class UserService: IUserService
             model.PhoneNumber,
             UserHelper.GenerateSHA256(model.Password),
             new List<Guid>(),
-            new List<Guid>(),
+            new List<Post>(),
             new List<Guid>()
             );
         
@@ -88,12 +88,14 @@ public class UserService: IUserService
         var findToken = _dbContext.Tokens.FirstOrDefault(x =>
             token == x.Token);
         
-        if (findToken != null)
+        if (findToken == null)
         {
-            if (_tokenService.IsTokenFresh(findToken) == false)
-            {
-                throw new UnauthorizedAccessException("Token expired");
-            }
+            throw new UnauthorizedAccessException("Token is not found");
+        }
+        
+        if (_tokenService.IsTokenFresh(findToken) == false)
+        {
+            throw new UnauthorizedAccessException("Token expired");
         }
 
         var user = _dbContext.Users.FirstOrDefault(x =>
@@ -104,23 +106,25 @@ public class UserService: IUserService
             throw new ResourceNotFoundException("User not found");
         }
         
-        var userDTO = new UserDto(user.Id, user.CreateTime, user.FullName,
+        var userDtO = new UserDto(user.Id, user.CreateTime, user.FullName,
             user.BirthDate, user.Gender, user.Email, user.PhoneNumber);
 
-        return userDTO;
+        return userDtO;
     }
 
     public async Task PutProfile(UserEditModel model, String token)
     {
         var findToken = _dbContext.Tokens.FirstOrDefault(x =>
             token == x.Token);
-        
-        if (findToken != null)
+
+        if (findToken == null)
         {
-            if (_tokenService.IsTokenFresh(findToken) == false)
-            {
-                throw new UnauthorizedAccessException("Token expired");
-            }
+            throw new UnauthorizedAccessException("Token is not found");
+        }
+        
+        if (_tokenService.IsTokenFresh(findToken) == false)
+        {
+            throw new UnauthorizedAccessException("Token expired");
         }
         
         var user = _dbContext.Users.FirstOrDefault(x =>
@@ -130,14 +134,13 @@ public class UserService: IUserService
         {
             throw new ResourceNotFoundException("User not found");
         }
-        else
-        {
-            user.FullName = model.FullName;
-            user.Email = model.Email;
-            user.BirthDate = model.BirthDate;
-            user.Gender = model.Gender;
-            user.PhoneNumber = model.PhoneNumber;
-        }
+        
+        user.FullName = model.FullName;
+        user.Email = model.Email;
+        user.BirthDate = model.BirthDate;
+        user.Gender = model.Gender;
+        user.PhoneNumber = model.PhoneNumber;
+        
         await _dbContext.SaveChangesAsync();
     }
 }

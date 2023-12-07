@@ -23,7 +23,9 @@ public class AuthorService: IAuthorService
                 BirthDate = author.BirthDate,
                 Gender = author.Gender,
                 Posts = author.Posts.Count,
-                Likes = _dbContext.Posts.Count(post => author.Likes.Contains(post.Id)),
+                Likes = author.Posts
+                        .Where(post => author.Id == post.AuthorId)
+                        .Sum(post => post.Likes),
                 Created = author.CreateTime
             })
             .ToListAsync();

@@ -2,6 +2,7 @@
 using BlogBackend.Exceptions;
 using BlogBackend.Models;
 using BlogBackend.Services.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace BlogBackend.Services.Implementations;
 
@@ -52,7 +53,9 @@ public class TokenService : ITokenService
             throw new UnauthorizedAccessException("Token expired");
         }
         
-        var user = _dbContext.Users.FirstOrDefault(u => u.Id == findToken.UserId);
+        var user = _dbContext.Users
+            .Include(p => p.Posts)
+            .FirstOrDefault(u => u.Id == findToken.UserId);
 
         if (user == null)
         {

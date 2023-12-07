@@ -22,6 +22,7 @@ public class Post
     [Required]
     public Int32 ReadingTime { get; set; }
     
+    [Url]
     public String Image { get; set; }
     
     [Required]
