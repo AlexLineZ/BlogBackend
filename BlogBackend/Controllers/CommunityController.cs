@@ -1,4 +1,5 @@
-﻿using BlogBackend.Models.DTO;
+﻿using System.Security.Claims;
+using BlogBackend.Models.DTO;
 using BlogBackend.Models.Posts;
 using BlogBackend.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication;
@@ -62,6 +63,7 @@ public class CommunityController: ControllerBase
     }
 
     [HttpPost]
+    [Authorize]
     [Route("{id}/post")]
     public async Task<IActionResult> CreatePost(Guid id, CreatePostDto post)
     {
@@ -70,6 +72,8 @@ public class CommunityController: ControllerBase
         {
             throw new UnauthorizedAccessException("Unauthorized");
         }
+
+        var tokenUserId = User.Claims.FirstOrDefault(claim => claim.Type == "id")?.Value;
         var postId = await _communityService.CreatePost(id, post, token);
         return Ok(postId);
     } 

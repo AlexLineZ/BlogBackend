@@ -1,4 +1,5 @@
-﻿using BlogBackend.Data;
+﻿using System.Diagnostics.CodeAnalysis;
+using BlogBackend.Data;
 using BlogBackend.Data.Models.Posts;
 using BlogBackend.Exceptions;
 using BlogBackend.Models;
@@ -107,6 +108,7 @@ public class PostService: IPostService
         return newPost.Id;
     }
 
+    [SuppressMessage("ReSharper.DPA", "DPA0006: Large number of DB commands", MessageId = "count: 55")]
     public async Task<PostFullDto> GetPost(Guid postId, string? token)
     {
         var post = await _dbContext.Posts

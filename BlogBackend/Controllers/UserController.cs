@@ -1,5 +1,4 @@
 ﻿using BlogBackend.Data.Models.User;
-using BlogBackend.Helpers;
 using BlogBackend.Models;
 using BlogBackend.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication;
@@ -48,7 +47,10 @@ public class UserController : ControllerBase
     public async Task<IActionResult> Logout()
     {
         var token = await HttpContext.GetTokenAsync("access_token");
-        UserHelper.GetUserIdFromToken(token, );
+        if (string.IsNullOrEmpty(token))
+        {
+            throw new UnauthorizedAccessException("Unauthorized");
+        }
         
         await _userService.Logout(token);
         return Ok();
