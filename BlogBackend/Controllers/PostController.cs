@@ -53,7 +53,7 @@ public class PostController: ControllerBase
         var token = await HttpContext.GetTokenAsync("access_token");
         if (string.IsNullOrEmpty(token))
         {
-            throw new UnauthorizedAccessException();
+            throw new UnauthorizedAccessException("Unauthorized");
         }
         var id = await _postService.CreatePost(model, token);
         return Ok(id);
@@ -75,7 +75,7 @@ public class PostController: ControllerBase
         var token = await HttpContext.GetTokenAsync("access_token");
         if (string.IsNullOrEmpty(token))
         {
-            throw new UnauthorizedAccessException();
+            throw new UnauthorizedAccessException("Unauthorized");
         }
         await _postService.LikePost(postId, token);
         return Ok();
@@ -88,7 +88,7 @@ public class PostController: ControllerBase
         var token = await HttpContext.GetTokenAsync("access_token");
         if (string.IsNullOrEmpty(token))
         {
-            throw new UnauthorizedAccessException();
+            throw new UnauthorizedAccessException("Unauthorized");
         }
         await _postService.DislikePost(postId, token);
         return Ok();

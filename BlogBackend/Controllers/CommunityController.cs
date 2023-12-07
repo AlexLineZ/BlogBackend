@@ -33,7 +33,7 @@ public class CommunityController: ControllerBase
         var token = await HttpContext.GetTokenAsync("access_token");
         if (string.IsNullOrEmpty(token))
         {
-            throw new UnauthorizedAccessException();
+            throw new UnauthorizedAccessException("Unauthorized");
         }
         var communityUserList = await _communityService.GetUserCommunity(token);
         return Ok(communityUserList);
@@ -68,7 +68,7 @@ public class CommunityController: ControllerBase
         var token = await HttpContext.GetTokenAsync("access_token");
         if (string.IsNullOrEmpty(token))
         {
-            throw new UnauthorizedAccessException();
+            throw new UnauthorizedAccessException("Unauthorized");
         }
         var postId = await _communityService.CreatePost(id, post, token);
         return Ok(postId);
@@ -81,7 +81,7 @@ public class CommunityController: ControllerBase
         var token = await HttpContext.GetTokenAsync("access_token");
         if (string.IsNullOrEmpty(token))
         {
-            throw new UnauthorizedAccessException();
+            throw new UnauthorizedAccessException("Unauthorized");
         }
         var userRole = await _communityService.GetUserRole(id, token);
         return Ok(userRole);
@@ -94,7 +94,8 @@ public class CommunityController: ControllerBase
         var token = await HttpContext.GetTokenAsync("access_token");
         if (string.IsNullOrEmpty(token))
         {
-            throw new UnauthorizedAccessException();
+            throw new UnauthorizedAccessException("Unauthorized");
+
         }
         await _communityService.Subscribe(id, token);
         return Ok();
@@ -107,7 +108,7 @@ public class CommunityController: ControllerBase
         var token = await HttpContext.GetTokenAsync("access_token");
         if (string.IsNullOrEmpty(token))
         {
-            throw new UnauthorizedAccessException();
+            throw new UnauthorizedAccessException("Unauthorized");
         }
         await _communityService.Unsubscribe(id, token);
         return Ok();

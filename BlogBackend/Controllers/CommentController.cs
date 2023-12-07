@@ -33,7 +33,7 @@ public class CommentController: ControllerBase
         var token = await HttpContext.GetTokenAsync("access_token");
         if (string.IsNullOrEmpty(token))
         {
-            throw new UnauthorizedAccessException();
+            throw new UnauthorizedAccessException("Unauthorized");
         }
         await _commentService.CreateComment(comment, id, token);
         return Ok();
@@ -46,7 +46,7 @@ public class CommentController: ControllerBase
         var token = await HttpContext.GetTokenAsync("access_token");
         if (string.IsNullOrEmpty(token))
         {
-            throw new UnauthorizedAccessException();
+            throw new UnauthorizedAccessException("Unauthorized");
         }
         await _commentService.UpdateComment(id, comment, token);
         return Ok();
@@ -59,7 +59,7 @@ public class CommentController: ControllerBase
         var token = await HttpContext.GetTokenAsync("access_token");
         if (string.IsNullOrEmpty(token))
         {
-            throw new UnauthorizedAccessException();
+            throw new UnauthorizedAccessException("Unauthorized");
         }
         await _commentService.DeleteComment(id, token);
         return Ok();

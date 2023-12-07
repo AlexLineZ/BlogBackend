@@ -49,7 +49,7 @@ public class UserController : ControllerBase
         var token = await HttpContext.GetTokenAsync("access_token");
         if (string.IsNullOrEmpty(token))
         {
-            throw new UnauthorizedAccessException();
+            throw new UnauthorizedAccessException("Unauthorized");
         }
         await _userService.Logout(token);
         return Ok();
@@ -62,7 +62,7 @@ public class UserController : ControllerBase
         var token = await HttpContext.GetTokenAsync("access_token");
         if (string.IsNullOrEmpty(token))
         {
-            throw new UnauthorizedAccessException();
+            throw new UnauthorizedAccessException("Unauthorized");
         }
         var response = _userService.GetProfile(token);
         return Ok(response);
@@ -80,7 +80,7 @@ public class UserController : ControllerBase
         var token = await HttpContext.GetTokenAsync("access_token");
         if (string.IsNullOrEmpty(token))
         {
-            throw new UnauthorizedAccessException();
+            throw new UnauthorizedAccessException("Unauthorized");
         }
         await _userService.PutProfile(model, token);
         return Ok();

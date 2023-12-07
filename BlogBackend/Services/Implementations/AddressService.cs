@@ -1,4 +1,5 @@
 ﻿using BlogBackend.Data;
+using BlogBackend.Exceptions;
 using BlogBackend.Helpers;
 using BlogBackend.Models.GAR;
 using BlogBackend.Services.Interfaces;
@@ -72,6 +73,11 @@ public class AddressService: IAddressService
         
         var address =  _garDbContext.AsAddrObjs.FirstOrDefault(x =>
             x.Objectguid == objectGuid && x.Isactive == 1 && x.Isactual == 1);
+
+        if (address == null)
+        {
+            throw new ResourceNotFoundException($"Object with GUID {objectGuid} is not found");
+        }
             
         var searchAddressModel = new SearchAddressModel(
             address.Objectid,
