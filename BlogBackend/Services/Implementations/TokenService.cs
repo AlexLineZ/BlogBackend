@@ -55,6 +55,7 @@ public class TokenService : ITokenService
         
         var user = _dbContext.Users
             .Include(p => p.Posts)
+            .Include(c => c.Communities)
             .FirstOrDefault(u => u.Id == findToken.UserId);
 
         if (user == null)

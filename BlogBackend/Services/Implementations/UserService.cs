@@ -7,6 +7,7 @@ using BlogBackend.Models;
 using BlogBackend.Models.DTO;
 using BlogBackend.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace BlogBackend.Services.Implementations;
 
@@ -41,7 +42,7 @@ public class UserService: IUserService
             model.Email,
             model.PhoneNumber,
             UserHelper.GenerateSHA256(model.Password),
-            new List<Guid>(),
+            new List<Community>(),
             new List<Post>(),
             new List<Guid>()
             );
@@ -57,7 +58,8 @@ public class UserService: IUserService
 
     public async Task<TokenResponse> Login([FromBody] LoginCredentials model)
     {
-        var user = _dbContext.Users.FirstOrDefault(x =>
+        var user = _dbContext.Users
+            .FirstOrDefault(x =>
             x.Email == model.Email && x.Password == UserHelper.GenerateSHA256(model.Password));
 
         if (user == null)

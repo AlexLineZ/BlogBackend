@@ -1,7 +1,6 @@
 ﻿using BlogBackend.Models.DTO;
 using BlogBackend.Models.Posts;
 using BlogBackend.Services.Interfaces;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BlogBackend.Controllers;
@@ -35,10 +34,11 @@ public class PostController: ControllerBase
             return BadRequest(ModelState);
         }
         
-        var token = await HttpContext.GetTokenAsync("access_token");
+        var tokenUserId = User.Claims.FirstOrDefault(claim => claim.Type == "id")?.Value;
+        Guid? userId = tokenUserId == null? null : Guid.Parse(tokenUserId);
 
         var pageList = await  _postService.GetPostList(tags, author, min, max,
-            sorting, onlyMyCommunities, page, size, token);
+            sorting, onlyMyCommunities, page, size, userId);
         return Ok(pageList);
     }
 
@@ -50,12 +50,11 @@ public class PostController: ControllerBase
         {
             return BadRequest(ModelState);
         }
-        var token = await HttpContext.GetTokenAsync("access_token");
-        if (string.IsNullOrEmpty(token))
-        {
-            throw new UnauthorizedAccessException("Unauthorized");
-        }
-        var id = await _postService.CreatePost(model, token);
+        
+        var tokenUserId = User.Claims.FirstOrDefault(claim => claim.Type == "id")?.Value;
+        var userId = tokenUserId == null? Guid.Empty : Guid.Parse(tokenUserId);
+        
+        var id = await _postService.CreatePost(model, userId);
         return Ok(id);
     }
     
@@ -63,8 +62,10 @@ public class PostController: ControllerBase
     [Route("post/{id}")]
     public async Task<IActionResult> GetPostInformation(Guid id)
     {
-        var token = await HttpContext.GetTokenAsync("access_token");
-        var postFull = await _postService.GetPost(id, token);
+        var tokenUserId = User.Claims.FirstOrDefault(claim => claim.Type == "id")?.Value;
+        Guid? userId = tokenUserId == null? null : Guid.Parse(tokenUserId);
+        
+        var postFull = await _postService.GetPost(id, userId);
         return Ok(postFull);
     }
     
@@ -72,12 +73,10 @@ public class PostController: ControllerBase
     [Route("post/{postId}/like")]
     public async Task<IActionResult> LikePost(Guid postId)
     {
-        var token = await HttpContext.GetTokenAsync("access_token");
-        if (string.IsNullOrEmpty(token))
-        {
-            throw new UnauthorizedAccessException("Unauthorized");
-        }
-        await _postService.LikePost(postId, token);
+        var tokenUserId = User.Claims.FirstOrDefault(claim => claim.Type == "id")?.Value;
+        var userId = tokenUserId == null? Guid.Empty : Guid.Parse(tokenUserId);
+        
+        await _postService.LikePost(postId, userId);
         return Ok();
     }
     
@@ -85,12 +84,10 @@ public class PostController: ControllerBase
     [Route("post/{postId}/like")]
     public async Task<IActionResult> DislikePost(Guid postId)
     {
-        var token = await HttpContext.GetTokenAsync("access_token");
-        if (string.IsNullOrEmpty(token))
-        {
-            throw new UnauthorizedAccessException("Unauthorized");
-        }
-        await _postService.DislikePost(postId, token);
+        var tokenUserId = User.Claims.FirstOrDefault(claim => claim.Type == "id")?.Value;
+        var userId = tokenUserId == null? Guid.Empty : Guid.Parse(tokenUserId);
+        
+        await _postService.DislikePost(postId, userId);
         return Ok();
     }
 }

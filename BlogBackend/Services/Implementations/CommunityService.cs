@@ -200,7 +200,8 @@ public class CommunityService : ICommunityService
                     .ToList(),
             }).ToList(),
                 
-            Pagination = new PageInfoModel { Count = (int)Math.Ceiling((double)filteredPosts.Count() / size), Size = size, Current = page},
+            Pagination = new PageInfoModel 
+                { Count = (int)Math.Ceiling((double)filteredPosts.Count() / size), Size = size, Current = page},
         };
         
         return postGroup;
@@ -262,7 +263,7 @@ public class CommunityService : ICommunityService
         };
 
         community.CommunityUsers.Add(newSubscription);
-        user.Communities.Add(newSubscription.CommunityId);
+        user.Communities.Add(community);
         community.SubscribersCount++;
         await _dbContext.SaveChangesAsync();
     }
@@ -290,7 +291,7 @@ public class CommunityService : ICommunityService
         
         community.CommunityUsers.Remove(existingSubscription);
         community.SubscribersCount--;
-        user.Communities.Remove(existingSubscription.CommunityId);
+        user.Communities.Remove(community);
         await _dbContext.SaveChangesAsync();
     }
 
@@ -306,7 +307,7 @@ public class CommunityService : ICommunityService
 
         if (user != null && community.IsClosed)
         {
-            var isUserSubscribed = user.Communities.Any(c => c == community.Id);
+            var isUserSubscribed = user.Communities.Any(c => c == community);
 
             if (!isUserSubscribed)
             {
@@ -355,7 +356,9 @@ public class CommunityService : ICommunityService
             return null;
         }
         
-        var user = _dbContext.Users.FirstOrDefault(u => u.Id == findToken.UserId);
+        var user = _dbContext.Users
+            .Include(c => c.Communities)
+            .FirstOrDefault(u => u.Id == findToken.UserId);
 
         return user;
     }
