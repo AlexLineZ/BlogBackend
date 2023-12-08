@@ -31,12 +31,10 @@ public class CommunityController: ControllerBase
     [Route("my")]
     public async Task<IActionResult> GetUserCommunityList()
     {
-        var token = await HttpContext.GetTokenAsync("access_token");
-        if (string.IsNullOrEmpty(token))
-        {
-            throw new UnauthorizedAccessException("Unauthorized");
-        }
-        var communityUserList = await _communityService.GetUserCommunity(token);
+        var tokenUserId = User.Claims.FirstOrDefault(claim => claim.Type == "id")?.Value;
+        var userId = tokenUserId == null? Guid.Empty : Guid.Parse(tokenUserId);
+        
+        var communityUserList = await _communityService.GetUserCommunity(userId);
         return Ok(communityUserList);
     }
 
@@ -57,8 +55,10 @@ public class CommunityController: ControllerBase
         [FromQuery] Int32 size = 5
     )
     {
-        var token = await HttpContext.GetTokenAsync("access_token");
-        var postGroup = await _communityService.GetCommunityPost(id, tags, sorting, page, size, token);
+        var tokenUserId = User.Claims.FirstOrDefault(claim => claim.Type == "id")?.Value;
+        var userId = tokenUserId == null? Guid.Empty : Guid.Parse(tokenUserId);
+        
+        var postGroup = await _communityService.GetCommunityPost(id, tags, sorting, page, size, userId);
         return Ok(postGroup);
     }
 
@@ -67,14 +67,10 @@ public class CommunityController: ControllerBase
     [Route("{id}/post")]
     public async Task<IActionResult> CreatePost(Guid id, CreatePostDto post)
     {
-        var token = await HttpContext.GetTokenAsync("access_token");
-        if (string.IsNullOrEmpty(token))
-        {
-            throw new UnauthorizedAccessException("Unauthorized");
-        }
-
         var tokenUserId = User.Claims.FirstOrDefault(claim => claim.Type == "id")?.Value;
-        var postId = await _communityService.CreatePost(id, post, token);
+        var userId = tokenUserId == null? Guid.Empty : Guid.Parse(tokenUserId);
+        
+        var postId = await _communityService.CreatePost(id, post, userId);
         return Ok(postId);
     } 
     
@@ -82,12 +78,10 @@ public class CommunityController: ControllerBase
     [Route("{id}/role")]
     public async Task<IActionResult> GetUserRole(Guid id)
     {
-        var token = await HttpContext.GetTokenAsync("access_token");
-        if (string.IsNullOrEmpty(token))
-        {
-            throw new UnauthorizedAccessException("Unauthorized");
-        }
-        var userRole = await _communityService.GetUserRole(id, token);
+        var tokenUserId = User.Claims.FirstOrDefault(claim => claim.Type == "id")?.Value;
+        var userId = tokenUserId == null? Guid.Empty : Guid.Parse(tokenUserId);
+        
+        var userRole = await _communityService.GetUserRole(id, userId);
         return Ok(userRole);
     }
     
@@ -95,13 +89,10 @@ public class CommunityController: ControllerBase
     [Route("{id}/subscribe")]
     public async Task<IActionResult> SubscribeCommunity(Guid id)
     {
-        var token = await HttpContext.GetTokenAsync("access_token");
-        if (string.IsNullOrEmpty(token))
-        {
-            throw new UnauthorizedAccessException("Unauthorized");
-
-        }
-        await _communityService.Subscribe(id, token);
+        var tokenUserId = User.Claims.FirstOrDefault(claim => claim.Type == "id")?.Value;
+        var userId = tokenUserId == null? Guid.Empty : Guid.Parse(tokenUserId);
+        
+        await _communityService.Subscribe(id, userId);
         return Ok();
     }
     
@@ -109,12 +100,10 @@ public class CommunityController: ControllerBase
     [Route("{id}/unsubscribe")]
     public async Task<IActionResult> UnsubscribeCommunity(Guid id)
     {
-        var token = await HttpContext.GetTokenAsync("access_token");
-        if (string.IsNullOrEmpty(token))
-        {
-            throw new UnauthorizedAccessException("Unauthorized");
-        }
-        await _communityService.Unsubscribe(id, token);
+        var tokenUserId = User.Claims.FirstOrDefault(claim => claim.Type == "id")?.Value;
+        var userId = tokenUserId == null? Guid.Empty : Guid.Parse(tokenUserId);
+        
+        await _communityService.Unsubscribe(id, userId);
         return Ok();
     }
 }

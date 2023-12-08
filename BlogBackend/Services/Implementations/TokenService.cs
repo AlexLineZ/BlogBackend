@@ -38,25 +38,17 @@ public class TokenService : ITokenService
         return DateTime.UtcNow <= tokenData.ExpirationDate;
     }
     
-    public async Task<User> GetUser(String token)
+    public async Task<User> GetUser(Guid userId)
     {
-        var findToken = _dbContext.Tokens.FirstOrDefault(x =>
-            token == x.Token);
-
-        if (findToken == null)
+        if (userId == default)
         {
-            throw new UnauthorizedAccessException("Token is not found");
-        }
-        
-        if (IsTokenFresh(findToken) == false)
-        {
-            throw new UnauthorizedAccessException("Token expired");
+            throw new UnauthorizedAccessException("Token is expired or user unauthorized");
         }
         
         var user = _dbContext.Users
             .Include(p => p.Posts)
             .Include(c => c.Communities)
-            .FirstOrDefault(u => u.Id == findToken.UserId);
+            .FirstOrDefault(u => u.Id == userId);
 
         if (user == null)
         {

@@ -30,12 +30,10 @@ public class CommentController: ControllerBase
     [Route("post/{id}/comment")]
     public async Task<IActionResult> AddComment(Guid id, [FromBody] CreateCommentDto comment)
     {
-        var token = await HttpContext.GetTokenAsync("access_token");
-        if (string.IsNullOrEmpty(token))
-        {
-            throw new UnauthorizedAccessException("Unauthorized");
-        }
-        await _commentService.CreateComment(comment, id, token);
+        var tokenUserId = User.Claims.FirstOrDefault(claim => claim.Type == "id")?.Value;
+        var userId = tokenUserId == null? Guid.Empty : Guid.Parse(tokenUserId);
+        
+        await _commentService.CreateComment(comment, id, userId);
         return Ok();
     }
 
@@ -43,12 +41,10 @@ public class CommentController: ControllerBase
     [Route("comment/{id}")]
     public async Task<IActionResult> EditComment(Guid id, [FromBody] UpdateCommentDto comment)
     {
-        var token = await HttpContext.GetTokenAsync("access_token");
-        if (string.IsNullOrEmpty(token))
-        {
-            throw new UnauthorizedAccessException("Unauthorized");
-        }
-        await _commentService.UpdateComment(id, comment, token);
+        var tokenUserId = User.Claims.FirstOrDefault(claim => claim.Type == "id")?.Value;
+        var userId = tokenUserId == null? Guid.Empty : Guid.Parse(tokenUserId);
+        
+        await _commentService.UpdateComment(id, comment, userId);
         return Ok();
     }
 
@@ -56,12 +52,10 @@ public class CommentController: ControllerBase
     [Route("comment/{id}")]
     public async Task<IActionResult> DeleteComment(Guid id)
     {
-        var token = await HttpContext.GetTokenAsync("access_token");
-        if (string.IsNullOrEmpty(token))
-        {
-            throw new UnauthorizedAccessException("Unauthorized");
-        }
-        await _commentService.DeleteComment(id, token);
+        var tokenUserId = User.Claims.FirstOrDefault(claim => claim.Type == "id")?.Value;
+        var userId = tokenUserId == null? Guid.Empty : Guid.Parse(tokenUserId);
+        
+        await _commentService.DeleteComment(id, userId);
         return Ok();
     }
 }

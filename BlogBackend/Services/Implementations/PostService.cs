@@ -26,13 +26,8 @@ public class PostService: IPostService
     public async Task<PostGroup> GetPostList(List<Guid>? tags, string? author, int? min, int? max,
         PostSorting? sorting, bool onlyMyCommunities, int page, int size, Guid? userId)
     {
-        User? user = null;
-        
-        if (userId != null)
-        {
-            user = await GetUserOrNull(userId);
-        }
-            
+        User? user = await GetUserOrNull(userId);
+
         var posts = _dbContext.Posts
             .Include(p => p.Comments)
             .AsQueryable();
@@ -84,12 +79,7 @@ public class PostService: IPostService
 
     public async Task<Guid> CreatePost(CreatePostDto post, Guid userId)
     {
-        var user = await GetUserOrNull(userId);
-
-        if (user == null)
-        {
-            throw new UnauthorizedAccessException("Unauthorized");
-        }
+        var user = await _tokenService.GetUser(userId);
         
         var newPost = new Post {
             Id = Guid.NewGuid(),
@@ -126,13 +116,8 @@ public class PostService: IPostService
             throw new ResourceNotFoundException($"Post with id: {postId} not found");
         }
 
-        User? user = null;
-            
-        if (userId != null)
-        {
-            user = await GetUserOrNull(userId);
-        }
-
+        User? user = await GetUserOrNull(userId);
+        
         var hasLike = user != null && user.Likes.Contains(postId);
 
         var comments = post.Comments
@@ -183,12 +168,7 @@ public class PostService: IPostService
 
     public async Task LikePost(Guid postId, Guid userId)
     {
-        var user = await GetUserOrNull(userId);
-        
-        if (user == null)
-        {
-            throw new UnauthorizedAccessException("Unauthorized");
-        }
+        var user = await _tokenService.GetUser(userId);
         
         var post = await _dbContext.Posts.FirstOrDefaultAsync(p => p.Id == postId);
         
@@ -211,12 +191,7 @@ public class PostService: IPostService
     
     public async Task DislikePost(Guid postId, Guid userId)
     {
-        var user = await GetUserOrNull(userId);
-        
-        if (user == null)
-        {
-            throw new UnauthorizedAccessException("Unauthorized");
-        }
+        var user = await _tokenService.GetUser(userId);
         
         var post = await _dbContext.Posts.FirstOrDefaultAsync(p => p.Id == postId);
         
@@ -264,17 +239,17 @@ public class PostService: IPostService
         
         if (onlyMyCommunities && user != null)
         {
-            filteredPosts = filteredPosts.Where(p => p.CommunityId != null
-                                                     && user.Communities.Any(c => c.Id == p.CommunityId.Value));
+            filteredPosts = filteredPosts
+                .Where(p => p.CommunityId != null
+                                  && user.Communities.Any(c => c.Id == p.CommunityId.Value));
         }
-
-
-        if (!onlyMyCommunities || (onlyMyCommunities && user == null))
+        
+        if (!onlyMyCommunities || onlyMyCommunities && user == null || user == null)
         {
             filteredPosts = filteredPosts
                 .Where(post => !_dbContext.Communities
                     .Where(community => community.Id == post.CommunityId)
-                    .Any(community => community.IsClosed && user != null && !user.Communities.Contains(community))
+                    .Any(community => community.IsClosed)
                 );
         }
 
@@ -323,6 +298,11 @@ public class PostService: IPostService
     
     private async Task<User?> GetUserOrNull(Guid? userId)
     {
+        if (userId == default(Guid) || userId == null)
+        {
+            return null;
+        }
+        
         var user = _dbContext.Users
             .Include(u => u.Posts)
             .Include(c => c.Communities)
