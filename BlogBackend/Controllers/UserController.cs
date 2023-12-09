@@ -2,6 +2,7 @@
 using BlogBackend.Models;
 using BlogBackend.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BlogBackend.Controllers;
@@ -44,6 +45,7 @@ public class UserController : ControllerBase
 
     [HttpPost]
     [Route("logout")]
+    [Authorize]
     public async Task<IActionResult> Logout()
     {
         var token = await HttpContext.GetTokenAsync("access_token");
@@ -58,6 +60,7 @@ public class UserController : ControllerBase
 
     [HttpGet]
     [Route("profile")]
+    [Authorize]
     public async Task<IActionResult> GetProfile()
     {
         var tokenUserId = User.Claims.FirstOrDefault(claim => claim.Type == "id")?.Value;
@@ -69,6 +72,7 @@ public class UserController : ControllerBase
     
     [HttpPut]
     [Route("profile")]
+    [Authorize]
     public async Task<IActionResult> PutProfile(UserEditModel model)
     {
         if (!ModelState.IsValid)

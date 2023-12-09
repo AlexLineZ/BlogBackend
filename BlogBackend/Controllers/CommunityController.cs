@@ -1,11 +1,8 @@
-﻿using System.Security.Claims;
-using BlogBackend.Models.DTO;
+﻿using BlogBackend.Models.DTO;
 using BlogBackend.Models.Posts;
 using BlogBackend.Services.Interfaces;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.OpenApi.Extensions;
 
 namespace BlogBackend.Controllers;
 
@@ -29,6 +26,7 @@ public class CommunityController: ControllerBase
 
     [HttpGet]
     [Route("my")]
+    [Authorize]
     public async Task<IActionResult> GetUserCommunityList()
     {
         var tokenUserId = User.Claims.FirstOrDefault(claim => claim.Type == "id")?.Value;
@@ -80,6 +78,7 @@ public class CommunityController: ControllerBase
     } 
     
     [HttpGet]
+    [Authorize]
     [Route("{id}/role")]
     public async Task<IActionResult> GetUserRole(Guid id)
     {
@@ -91,6 +90,7 @@ public class CommunityController: ControllerBase
     }
     
     [HttpPost]
+    [Authorize]
     [Route("{id}/subscribe")]
     public async Task<IActionResult> SubscribeCommunity(Guid id)
     {
@@ -102,6 +102,7 @@ public class CommunityController: ControllerBase
     }
     
     [HttpDelete]
+    [Authorize]
     [Route("{id}/unsubscribe")]
     public async Task<IActionResult> UnsubscribeCommunity(Guid id)
     {

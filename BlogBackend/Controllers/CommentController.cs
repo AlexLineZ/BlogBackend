@@ -27,6 +27,7 @@ public class CommentController: ControllerBase
     
     [HttpPost]
     [Route("post/{id}/comment")]
+    [Authorize]
     public async Task<IActionResult> AddComment(Guid id, [FromBody] CreateCommentDto comment)
     {
         if (!ModelState.IsValid)
@@ -43,6 +44,7 @@ public class CommentController: ControllerBase
 
     [HttpPut]
     [Route("comment/{id}")]
+    [Authorize]
     public async Task<IActionResult> EditComment(Guid id, [FromBody] UpdateCommentDto comment)
     {
         if (!ModelState.IsValid)
@@ -59,6 +61,7 @@ public class CommentController: ControllerBase
 
     [HttpDelete]
     [Route("comment/{id}")]
+    [Authorize]
     public async Task<IActionResult> DeleteComment(Guid id)
     {
         var tokenUserId = User.Claims.FirstOrDefault(claim => claim.Type == "id")?.Value;

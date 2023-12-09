@@ -8,7 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace BlogBackend.Services.Implementations;
 
-public class AddressService: IAddressService
+public class AddressService : IAddressService
 {
     private readonly Gar70Context _garDbContext;
 
@@ -16,7 +16,7 @@ public class AddressService: IAddressService
     {
         _garDbContext = garDbContext;
     }
-    
+
     public async Task<List<SearchAddressModel>> Search(Int64 parentObjectId, string? query)
     {
         var hierarchyList = await _garDbContext.AsAdmHierarchies
@@ -39,7 +39,7 @@ public class AddressService: IAddressService
         {
             addressList = addressList.Where(x => x.Text != null && x.Text.Contains(query)).ToList();
         }
-        
+
         return addressList;
     }
 
@@ -49,7 +49,7 @@ public class AddressService: IAddressService
             x.Objectguid == objectGuid && x.Isactive == 1 && x.Isactual == 1);
 
         var addressList = new List<SearchAddressModel>();
-        
+
         if (house != null)
         {
             var searchHouseModel = new SearchAddressModel(
@@ -60,25 +60,25 @@ public class AddressService: IAddressService
                 AddressHelper.GetAddressName(10)
             );
             addressList.Add(searchHouseModel);
-            
+
             var houseHierarchy = await _garDbContext.AsAdmHierarchies
                 .Where(x => x.Objectid == house.Objectid && x.Isactive == 1)
                 .FirstOrDefaultAsync();
-            
+
             var parentGuid = _garDbContext.AsAddrObjs.FirstOrDefault(x =>
                 x.Objectid == houseHierarchy.Parentobjid && x.Isactive == 1 && x.Isactual == 1).Objectguid;
 
             objectGuid = parentGuid;
         }
-        
-        var address =  _garDbContext.AsAddrObjs.FirstOrDefault(x =>
+
+        var address = _garDbContext.AsAddrObjs.FirstOrDefault(x =>
             x.Objectguid == objectGuid && x.Isactive == 1 && x.Isactual == 1);
 
         if (address == null)
         {
             throw new ResourceNotFoundException($"Object with GUID {objectGuid} is not found");
         }
-            
+
         var searchAddressModel = new SearchAddressModel(
             address.Objectid,
             address.Objectguid,
@@ -86,7 +86,7 @@ public class AddressService: IAddressService
             AddressHelper.GetGarAddressLevel(Convert.ToInt32(address.Level)),
             AddressHelper.GetAddressName(Convert.ToInt32(address.Level))
         );
-            
+
         while (searchAddressModel != null)
         {
             addressList.Add(searchAddressModel);
@@ -94,7 +94,7 @@ public class AddressService: IAddressService
         }
 
         addressList.Reverse();
-        
+
         return addressList;
     }
 
@@ -124,7 +124,7 @@ public class AddressService: IAddressService
 
         return addressList;
     }
-    
+
     private async Task<List<SearchAddressModel>> FindChildInHouses(List<AsAdmHierarchy> hierarchyList)
     {
         var addressList = new List<SearchAddressModel>();
@@ -177,5 +177,4 @@ public class AddressService: IAddressService
             )
             : null;
     }
-
 }

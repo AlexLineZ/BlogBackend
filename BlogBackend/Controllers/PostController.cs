@@ -1,6 +1,7 @@
 ﻿using BlogBackend.Models.DTO;
 using BlogBackend.Models.Posts;
 using BlogBackend.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BlogBackend.Controllers;
@@ -44,6 +45,7 @@ public class PostController: ControllerBase
 
     [HttpPost]
     [Route("post")]
+    [Authorize]
     public async Task<IActionResult> CreatePost([FromBody] CreatePostDto model)
     {
         if (!ModelState.IsValid)
@@ -71,6 +73,7 @@ public class PostController: ControllerBase
     
     [HttpPost]
     [Route("post/{postId}/like")]
+    [Authorize]
     public async Task<IActionResult> LikePost(Guid postId)
     {
         var tokenUserId = User.Claims.FirstOrDefault(claim => claim.Type == "id")?.Value;
@@ -82,6 +85,7 @@ public class PostController: ControllerBase
     
     [HttpDelete]
     [Route("post/{postId}/like")]
+    [Authorize]
     public async Task<IActionResult> DislikePost(Guid postId)
     {
         var tokenUserId = User.Claims.FirstOrDefault(claim => claim.Type == "id")?.Value;
