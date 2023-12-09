@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using BlogBackend.Validation;
 
 namespace BlogBackend.Models.DTO;
 
@@ -18,6 +19,7 @@ public class CreatePostDto
     [Url]
     public String Image { get; set; }
     
+    [ValidAddressId]
     public Guid? AddressId { get; set; }
 
     [Required]

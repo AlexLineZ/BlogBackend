@@ -84,7 +84,7 @@ public class AddressService : IAddressService
         var searchAddressModel = new SearchAddressModel(
             address.Objectid,
             address.Objectguid,
-            address.Name,
+            address.Typename + " " + address.Name,
             AddressHelper.GetGarAddressLevel(Convert.ToInt32(address.Level)),
             AddressHelper.GetAddressName(Convert.ToInt32(address.Level))
         );
@@ -115,7 +115,7 @@ public class AddressService : IAddressService
                 var searchAddressModel = new SearchAddressModel(
                     address.Objectid,
                     address.Objectguid,
-                    address.Name,
+                    address.Typename + " " + address.Name,
                     AddressHelper.GetGarAddressLevel(Convert.ToInt32(address.Level)),
                     AddressHelper.GetAddressName(Convert.ToInt32(address.Level))
                 );
@@ -173,7 +173,7 @@ public class AddressService : IAddressService
             ? new SearchAddressModel(
                 address.Objectid,
                 address.Objectguid,
-                address.Name,
+                address.Typename + " " + address.Name,
                 AddressHelper.GetGarAddressLevel(Convert.ToInt32(address.Level)),
                 AddressHelper.GetAddressName(Convert.ToInt32(address.Level))
             )
@@ -182,9 +182,9 @@ public class AddressService : IAddressService
     
     private string GetHouseName(AsHouse house)
     {
-        var chainHouseNumber = new List<string>();
+        var chainHouseNumber = new List<String>();
 
-        if (!string.IsNullOrEmpty(house.Housenum))
+        if (!String.IsNullOrEmpty(house.Housenum))
         {
             chainHouseNumber.Add(house.Housenum);
         }
@@ -201,6 +201,6 @@ public class AddressService : IAddressService
             chainHouseNumber.Add(house.Addnum2 ?? String.Empty);
         }
 
-        return string.Join(" ", chainHouseNumber).Trim();
+        return String.Join(" ", chainHouseNumber).Trim();
     }
 }
