@@ -4,7 +4,8 @@ namespace BlogBackend.Services.Interfaces;
 
 public interface ITokenService
 {
+    String GenerateJwtToken(IConfiguration configuration, User user);
     Task AddOrEditToken(String token, User user);
-    Boolean IsTokenFresh(TokenStorage tokenData);
     Task<User> GetUser(Guid userId);
+    Task<User?> GetUserOrNull(Guid? userId);
 }

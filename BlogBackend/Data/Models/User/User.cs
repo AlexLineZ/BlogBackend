@@ -31,7 +31,7 @@ public class User
     [MinLength(6)]
     public String Password { get; set; }
     
-    public List<Community> Communities { get; set; }
+    public List<Guid> Communities { get; set; }
     
     public List<Post> Posts { get; set; }
     
@@ -40,7 +40,7 @@ public class User
     public User() { }
     public User(Guid id, string fullName, DateTime birthDate, 
         Gender gender, string email, string phoneNumber, string password,
-        List<Community> communities, List<Post> posts, List<Guid> likes)
+        List<Guid> communities, List<Post> posts, List<Guid> likes)
     {
         Id = id;
         CreateTime = DateTime.UtcNow;

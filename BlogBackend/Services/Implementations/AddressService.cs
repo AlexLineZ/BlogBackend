@@ -37,7 +37,7 @@ public class AddressService: IAddressService
 
         if (query != null)
         {
-            addressList = addressList.Where(x => x.Text.Contains(query)).ToList();
+            addressList = addressList.Where(x => x.Text != null && x.Text.Contains(query)).ToList();
         }
         
         return addressList;
@@ -55,7 +55,7 @@ public class AddressService: IAddressService
             var searchHouseModel = new SearchAddressModel(
                 house.Objectid,
                 house.Objectguid,
-                house.Housenum,
+                house.Housenum ?? string.Empty,
                 GarAddressLevel.Building,
                 AddressHelper.GetAddressName(10)
             );
@@ -140,7 +140,7 @@ public class AddressService: IAddressService
                 var searchAddressModel = new SearchAddressModel(
                     address.Objectid,
                     address.Objectguid,
-                    address.Housenum,
+                    address.Housenum ?? string.Empty,
                     GarAddressLevel.Building,
                     AddressHelper.GetAddressName(10)
                 );

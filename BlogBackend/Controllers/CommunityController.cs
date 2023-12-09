@@ -65,8 +65,13 @@ public class CommunityController: ControllerBase
     [HttpPost]
     [Authorize]
     [Route("{id}/post")]
-    public async Task<IActionResult> CreatePost(Guid id, CreatePostDto post)
+    public async Task<IActionResult> CreatePost(Guid id, [FromBody]CreatePostDto post)
     {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+        
         var tokenUserId = User.Claims.FirstOrDefault(claim => claim.Type == "id")?.Value;
         var userId = tokenUserId == null? Guid.Empty : Guid.Parse(tokenUserId);
         

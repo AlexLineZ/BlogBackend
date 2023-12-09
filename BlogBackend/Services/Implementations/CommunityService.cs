@@ -5,7 +5,6 @@ using BlogBackend.Models.DTO;
 using BlogBackend.Models.Posts;
 using BlogBackend.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 
 namespace BlogBackend.Services.Implementations;
 
@@ -72,7 +71,7 @@ public class CommunityService : ICommunityService
                 _dbContext.Users,
                 cu => cu.UserId,
                 user => user.Id,
-                (cu, user) => new UserDto
+                (_, user) => new UserDto
                 {
                     Id = user.Id,
                     CreateTime = user.CreateTime,
@@ -158,7 +157,7 @@ public class CommunityService : ICommunityService
             throw new ResourceNotFoundException($"Community with id: {communityId} is not found");
         }
 
-        User? user = await GetUserOrNull(userId);
+        User? user = await _tokenService.GetUserOrNull(userId);
 
         var posts = community.Posts;
 
@@ -258,7 +257,7 @@ public class CommunityService : ICommunityService
         };
 
         community.CommunityUsers.Add(newSubscription);
-        user.Communities.Add(community);
+        user.Communities.Add(communityId);
         community.SubscribersCount++;
         await _dbContext.SaveChangesAsync();
     }
@@ -286,7 +285,7 @@ public class CommunityService : ICommunityService
         
         community.CommunityUsers.Remove(existingSubscription);
         community.SubscribersCount--;
-        user.Communities.Remove(community);
+        user.Communities.Remove(communityId);
         await _dbContext.SaveChangesAsync();
     }
 
@@ -302,7 +301,7 @@ public class CommunityService : ICommunityService
 
         if (user != null && community.IsClosed)
         {
-            var isUserSubscribed = user.Communities.Any(c => c == community);
+            var isUserSubscribed = user.Communities.Any(c => c == community.Id);
 
             if (!isUserSubscribed)
             {
@@ -313,7 +312,7 @@ public class CommunityService : ICommunityService
         
         if (tags != null && tags.Any())
         {
-            filteredPosts = filteredPosts.Where(p => p.Tags.Any(t => tags.Contains(t)));
+            filteredPosts = filteredPosts.Where(p => p.Tags.Any(tags.Contains));
         }
         
         return filteredPosts;
@@ -334,20 +333,6 @@ public class CommunityService : ICommunityService
     private IQueryable<Post> Paginate(IQueryable<Post> posts, int page, int size)
     {
         return posts.Skip((page - 1) * size).Take(size);
-    }
-
-    private async Task<User?> GetUserOrNull(Guid userId)
-    {
-        if (userId == default)
-        {
-            return null;
-        }
-        
-        var user = _dbContext.Users
-            .Include(c => c.Communities)
-            .FirstOrDefault(u => u.Id == userId);
-
-        return user;
     }
 }
 

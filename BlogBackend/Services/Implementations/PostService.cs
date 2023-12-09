@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using BlogBackend.Data;
+﻿using BlogBackend.Data;
 using BlogBackend.Data.Models.Posts;
 using BlogBackend.Exceptions;
 using BlogBackend.Models;
@@ -8,7 +7,6 @@ using BlogBackend.Models.DTO;
 using BlogBackend.Models.Posts;
 using BlogBackend.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 
 namespace BlogBackend.Services.Implementations;
 
@@ -26,7 +24,7 @@ public class PostService: IPostService
     public async Task<PostGroup> GetPostList(List<Guid>? tags, string? author, int? min, int? max,
         PostSorting? sorting, bool onlyMyCommunities, int page, int size, Guid? userId)
     {
-        User? user = await GetUserOrNull(userId);
+        User? user = await _tokenService.GetUserOrNull(userId);
 
         var posts = _dbContext.Posts
             .Include(p => p.Comments)
@@ -116,7 +114,7 @@ public class PostService: IPostService
             throw new ResourceNotFoundException($"Post with id: {postId} not found");
         }
 
-        User? user = await GetUserOrNull(userId);
+        User? user = await _tokenService.GetUserOrNull(userId);
         
         var hasLike = user != null && user.Likes.Contains(postId);
 
@@ -219,7 +217,7 @@ public class PostService: IPostService
         
         if (tags != null && tags.Any())
         {
-            filteredPosts = filteredPosts.Where(p => p.Tags.Any(t => tags.Contains(t)));
+            filteredPosts = filteredPosts.Where(p => p.Tags.Any(tags.Contains));
         }
         
         if (!string.IsNullOrEmpty(author))
@@ -241,10 +239,10 @@ public class PostService: IPostService
         {
             filteredPosts = filteredPosts
                 .Where(p => p.CommunityId != null
-                                  && user.Communities.Any(c => c.Id == p.CommunityId.Value));
+                                  && user.Communities.Any(c => c == p.CommunityId.Value));
         }
         
-        if (!onlyMyCommunities || onlyMyCommunities && user == null || user == null)
+        if (onlyMyCommunities && user == null || user == null)
         {
             filteredPosts = filteredPosts
                 .Where(post => !_dbContext.Communities
@@ -253,6 +251,15 @@ public class PostService: IPostService
                 );
         }
 
+        if (!onlyMyCommunities && user != null)
+        {
+            filteredPosts = filteredPosts
+                .Where(post =>
+                    !_dbContext.Communities
+                        .Where(community => community.Id == post.CommunityId)
+                        .Any(community => community.IsClosed && !user.Communities.Contains(community.Id))
+                );
+        }
 
         return filteredPosts;
     }
@@ -294,20 +301,5 @@ public class PostService: IPostService
         }
         
         return commentTree;
-    }
-    
-    private async Task<User?> GetUserOrNull(Guid? userId)
-    {
-        if (userId == default(Guid) || userId == null)
-        {
-            return null;
-        }
-        
-        var user = _dbContext.Users
-            .Include(u => u.Posts)
-            .Include(c => c.Communities)
-            .FirstOrDefault(u => u.Id == userId);
-
-        return user;
     }
 }

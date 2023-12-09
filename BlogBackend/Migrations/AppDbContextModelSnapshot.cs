@@ -163,6 +163,7 @@ namespace BlogBackend.Migrations
                         .HasColumnType("integer");
 
                     b.Property<List<Guid>>("Tags")
+                        .IsRequired()
                         .HasColumnType("uuid[]");
 
                     b.Property<string>("Title")

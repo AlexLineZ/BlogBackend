@@ -165,7 +165,7 @@ public class CommentService: ICommentService
 
         if (post == null)
         {
-            throw new ResourceNotFoundException($"Post with id: {postId} not found");;
+            throw new ResourceNotFoundException($"Post with id: {postId} not found");
         }
 
         if (post.CommunityId == null)

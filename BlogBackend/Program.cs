@@ -1,3 +1,4 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using System.Text.Json.Serialization;
 using BlogBackend.Data;
@@ -51,6 +52,29 @@ builder.Services.AddAuthentication(opt => {
             ValidIssuer = builder.Configuration["Jwt:Issuer"]!,
             ValidAudience = builder.Configuration["Jwt:Audience"]!,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"]!))
+        };
+        
+        options.Events = new JwtBearerEvents
+        {
+            OnTokenValidated = async context =>
+            {
+                if (context.SecurityToken is JwtSecurityToken token)
+                {
+                    var rawToken = context.Request.Headers["Authorization"]
+                        .ToString().Replace("Bearer ", "");
+
+                    var bannedTokenService = context.HttpContext
+                        .RequestServices.GetRequiredService<IBannedTokenService>();
+                    
+                    if (await bannedTokenService.IsTokenBannedAsync(rawToken))
+                    {
+                        context.Fail("Access denied: Token is banned.");
+                    }
+
+                    await Task.CompletedTask;
+                }
+                await Task.CompletedTask;
+            }
         };
     });
 

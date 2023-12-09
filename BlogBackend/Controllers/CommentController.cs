@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BlogBackend.Controllers;
 
-
 [ApiController]
 [Route("api")]
 public class CommentController: ControllerBase
@@ -30,6 +29,11 @@ public class CommentController: ControllerBase
     [Route("post/{id}/comment")]
     public async Task<IActionResult> AddComment(Guid id, [FromBody] CreateCommentDto comment)
     {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+        
         var tokenUserId = User.Claims.FirstOrDefault(claim => claim.Type == "id")?.Value;
         var userId = tokenUserId == null? Guid.Empty : Guid.Parse(tokenUserId);
         
@@ -41,6 +45,11 @@ public class CommentController: ControllerBase
     [Route("comment/{id}")]
     public async Task<IActionResult> EditComment(Guid id, [FromBody] UpdateCommentDto comment)
     {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+        
         var tokenUserId = User.Claims.FirstOrDefault(claim => claim.Type == "id")?.Value;
         var userId = tokenUserId == null? Guid.Empty : Guid.Parse(tokenUserId);
         
