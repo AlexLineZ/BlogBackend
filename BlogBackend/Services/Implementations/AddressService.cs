@@ -8,7 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace BlogBackend.Services.Implementations;
 
-public class AddressService: IAddressService
+public class AddressService : IAddressService
 {
     private readonly Gar70Context _garDbContext;
 
@@ -16,7 +16,7 @@ public class AddressService: IAddressService
     {
         _garDbContext = garDbContext;
     }
-    
+
     public async Task<List<SearchAddressModel>> Search(Int64 parentObjectId, string? query)
     {
         var hierarchyList = await _garDbContext.AsAdmHierarchies
@@ -37,9 +37,10 @@ public class AddressService: IAddressService
 
         if (query != null)
         {
-            addressList = addressList.Where(x => x.Text.Contains(query)).ToList();
+            addressList = addressList
+                .Where(x => x.Text != null && x.Text.Contains(query)).ToList();
         }
-        
+
         return addressList;
     }
 
@@ -49,44 +50,45 @@ public class AddressService: IAddressService
             x.Objectguid == objectGuid && x.Isactive == 1 && x.Isactual == 1);
 
         var addressList = new List<SearchAddressModel>();
-        
+
         if (house != null)
         {
             var searchHouseModel = new SearchAddressModel(
                 house.Objectid,
                 house.Objectguid,
-                house.Housenum,
+                GetHouseName(house),
                 GarAddressLevel.Building,
                 AddressHelper.GetAddressName(10)
             );
             addressList.Add(searchHouseModel);
-            
+
             var houseHierarchy = await _garDbContext.AsAdmHierarchies
                 .Where(x => x.Objectid == house.Objectid && x.Isactive == 1)
                 .FirstOrDefaultAsync();
-            
+
+            if (houseHierarchy!= null) {}
             var parentGuid = _garDbContext.AsAddrObjs.FirstOrDefault(x =>
                 x.Objectid == houseHierarchy.Parentobjid && x.Isactive == 1 && x.Isactual == 1).Objectguid;
 
             objectGuid = parentGuid;
         }
-        
-        var address =  _garDbContext.AsAddrObjs.FirstOrDefault(x =>
+
+        var address = _garDbContext.AsAddrObjs.FirstOrDefault(x =>
             x.Objectguid == objectGuid && x.Isactive == 1 && x.Isactual == 1);
 
         if (address == null)
         {
             throw new ResourceNotFoundException($"Object with GUID {objectGuid} is not found");
         }
-            
+
         var searchAddressModel = new SearchAddressModel(
             address.Objectid,
             address.Objectguid,
-            address.Name,
+            address.Typename + " " + address.Name,
             AddressHelper.GetGarAddressLevel(Convert.ToInt32(address.Level)),
             AddressHelper.GetAddressName(Convert.ToInt32(address.Level))
         );
-            
+
         while (searchAddressModel != null)
         {
             addressList.Add(searchAddressModel);
@@ -94,7 +96,7 @@ public class AddressService: IAddressService
         }
 
         addressList.Reverse();
-        
+
         return addressList;
     }
 
@@ -113,7 +115,7 @@ public class AddressService: IAddressService
                 var searchAddressModel = new SearchAddressModel(
                     address.Objectid,
                     address.Objectguid,
-                    address.Name,
+                    address.Typename + " " + address.Name,
                     AddressHelper.GetGarAddressLevel(Convert.ToInt32(address.Level)),
                     AddressHelper.GetAddressName(Convert.ToInt32(address.Level))
                 );
@@ -124,7 +126,7 @@ public class AddressService: IAddressService
 
         return addressList;
     }
-    
+
     private async Task<List<SearchAddressModel>> FindChildInHouses(List<AsAdmHierarchy> hierarchyList)
     {
         var addressList = new List<SearchAddressModel>();
@@ -140,7 +142,7 @@ public class AddressService: IAddressService
                 var searchAddressModel = new SearchAddressModel(
                     address.Objectid,
                     address.Objectguid,
-                    address.Housenum,
+                    GetHouseName(address),
                     GarAddressLevel.Building,
                     AddressHelper.GetAddressName(10)
                 );
@@ -171,11 +173,34 @@ public class AddressService: IAddressService
             ? new SearchAddressModel(
                 address.Objectid,
                 address.Objectguid,
-                address.Name,
+                address.Typename + " " + address.Name,
                 AddressHelper.GetGarAddressLevel(Convert.ToInt32(address.Level)),
                 AddressHelper.GetAddressName(Convert.ToInt32(address.Level))
             )
             : null;
     }
+    
+    private string GetHouseName(AsHouse house)
+    {
+        var chainHouseNumber = new List<String>();
 
+        if (!String.IsNullOrEmpty(house.Housenum))
+        {
+            chainHouseNumber.Add(house.Housenum);
+        }
+
+        if (house.Addtype1 != null)
+        {
+            chainHouseNumber.Add(AddressHelper.GetHouseType(house.Addtype1));
+            chainHouseNumber.Add(house.Addnum1 ?? String.Empty);
+        }
+
+        if (house.Addtype2 != null)
+        {
+            chainHouseNumber.Add(AddressHelper.GetHouseType(house.Addtype2));
+            chainHouseNumber.Add(house.Addnum2 ?? String.Empty);
+        }
+
+        return String.Join(" ", chainHouseNumber).Trim();
+    }
 }

@@ -10,6 +10,6 @@ public interface IUserService
     Task<TokenResponse> Register([FromBody] UserRegisterModel model);
     Task<TokenResponse> Login([FromBody] LoginCredentials model);
     Task Logout(String token);
-    UserDto GetProfile(String token);
-    Task PutProfile(UserEditModel model, String token);
+    UserDto GetProfile(Guid userId);
+    Task PutProfile(UserEditModel model, Guid userId);
 }
