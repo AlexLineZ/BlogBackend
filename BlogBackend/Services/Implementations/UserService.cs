@@ -50,7 +50,6 @@ public class UserService: IUserService
         var token = _tokenService.GenerateJwtToken(_configuration, user);
         
         await _dbContext.Users.AddAsync(user);
-        await _tokenService.AddOrEditToken(token, user);
         await _dbContext.SaveChangesAsync();
 
         return new TokenResponse(token);
@@ -68,20 +67,21 @@ public class UserService: IUserService
         }
 
         var token = _tokenService.GenerateJwtToken(_configuration, user);
-        await _tokenService.AddOrEditToken(token, user);
-        
+
         return new TokenResponse(token);
     }
 
     public async Task Logout(String token)
     {
-        var findToken = _dbContext.Tokens.FirstOrDefault(x =>
+        var findToken = _dbContext.ExpiredTokens.FirstOrDefault(x =>
             x.Token == token);
-        if (findToken == null)
+        
+        if (findToken != null)
         {
-            throw new UnauthorizedAccessException("Token not found");
+            throw new UnauthorizedAccessException("User already logged out");
         }
-        _dbContext.Tokens.Remove(findToken);
+        
+        _dbContext.ExpiredTokens.Add(new ExpiredTokenStorage{Token = token});
         await _dbContext.SaveChangesAsync();
     }
 

@@ -34,23 +34,6 @@ public class TokenService : ITokenService
         return tokenHandler.WriteToken(token);
     }
     
-    public async Task AddOrEditToken(String token, User user)
-    {
-        var tokenData = _dbContext.Tokens.FirstOrDefault(x =>
-            x.UserId == user.Id);
-
-        if (tokenData == null)
-        {
-            var newToken = new TokenStorage(new Guid(), user.Id, token, DateTime.UtcNow.AddMinutes(30));
-            await _dbContext.Tokens.AddAsync(newToken);
-        }
-        else
-        {
-            tokenData.ExpirationDate = DateTime.UtcNow.AddMinutes(30);
-            tokenData.Token = token;
-        }
-        await _dbContext.SaveChangesAsync();
-    }
 
     public async Task<User> GetUser(Guid userId)
     {

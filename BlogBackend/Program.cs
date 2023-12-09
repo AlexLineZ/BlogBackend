@@ -18,6 +18,7 @@ var connection = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connection));
 builder.Services.AddDbContext<Gar70Context>(options => options.UseNpgsql(connection));
 
+builder.Services.AddScoped<IBannedTokenService, BannedTokenService>();
 
 // Add services to the container.
 builder.Services.AddControllers();
