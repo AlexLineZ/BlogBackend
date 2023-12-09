@@ -5,7 +5,6 @@ using BlogBackend.Models.DTO;
 using BlogBackend.Models.Posts;
 using BlogBackend.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 
 namespace BlogBackend.Services.Implementations;
 
@@ -38,9 +37,9 @@ public class CommunityService : ICommunityService
         return communityDtOs;
     }
 
-    public async Task<List<CommunityUserDto>> GetUserCommunity(String token)
+    public async Task<List<CommunityUserDto>> GetUserCommunity(Guid userId)
     {
-        var user = await _tokenService.GetUser(token);
+        var user = await _tokenService.GetUser(userId);
 
         var communityUserDtOs = _dbContext.Communities
             .Where(c => c.CommunityUsers.Any(cu => cu.UserId == user.Id))
@@ -72,7 +71,7 @@ public class CommunityService : ICommunityService
                 _dbContext.Users,
                 cu => cu.UserId,
                 user => user.Id,
-                (cu, user) => new UserDto
+                (_, user) => new UserDto
                 {
                     Id = user.Id,
                     CreateTime = user.CreateTime,
@@ -98,9 +97,9 @@ public class CommunityService : ICommunityService
         return communityDto;
     }
 
-    public async Task<Guid> CreatePost(Guid communityId, CreatePostDto post, String token)
+    public async Task<Guid> CreatePost(Guid communityId, CreatePostDto post, Guid userId)
     {
-        var user = await _tokenService.GetUser(token);
+        var user = await _tokenService.GetUser(userId);
         
         var community = await _dbContext.Communities
             .Include(c => c.CommunityUsers)
@@ -141,13 +140,13 @@ public class CommunityService : ICommunityService
         
         _dbContext.Posts.Add(newPost);
         community.Posts.Add(newPost);
-        user.Posts.Add(newPost.Id);
+        user.Posts.Add(newPost);
         await _dbContext.SaveChangesAsync();
         return newPost.Id;
     }
 
     public async Task<PostGroup> GetCommunityPost(Guid communityId, List<Guid>? tags,
-        PostSorting? sorting, Int32 page, Int32 size, string? token)
+        PostSorting? sorting, Int32 page, Int32 size, Guid userId)
     {
         var community = await _dbContext.Communities
             .Include(c => c.Posts)
@@ -158,13 +157,8 @@ public class CommunityService : ICommunityService
             throw new ResourceNotFoundException($"Community with id: {communityId} is not found");
         }
 
-        User? user = null;
-            
-        if (!token.IsNullOrEmpty())
-        {
-            user = await GetUserOrNull(token);
-        }
-        
+        User? user = await _tokenService.GetUserOrNull(userId);
+
         var posts = community.Posts;
 
         var filteredPosts = ApplyFilters(posts, tags, user, community);
@@ -200,15 +194,16 @@ public class CommunityService : ICommunityService
                     .ToList(),
             }).ToList(),
                 
-            Pagination = new PageInfoModel { Count = (int)Math.Ceiling((double)filteredPosts.Count() / size), Size = size, Current = page},
+            Pagination = new PageInfoModel 
+                { Count = (int)Math.Ceiling((double)filteredPosts.Count() / size), Size = size, Current = page},
         };
         
         return postGroup;
     }
 
-    public async Task<CommunityRole?> GetUserRole(Guid communityId, String token)
+    public async Task<CommunityRole?> GetUserRole(Guid communityId, Guid userId)
     {
-        var user = await _tokenService.GetUser(token);
+        var user = await _tokenService.GetUser(userId);
 
         var community = await _dbContext.Communities
             .Include(c => c.CommunityUsers)
@@ -232,9 +227,9 @@ public class CommunityService : ICommunityService
         return userRole;
     }
 
-    public async Task Subscribe(Guid communityId, String token)
+    public async Task Subscribe(Guid communityId, Guid userId)
     {
-        var user = await _tokenService.GetUser(token);
+        var user = await _tokenService.GetUser(userId);
 
         var community = await _dbContext.Communities
             .Include(c => c.CommunityUsers)
@@ -262,14 +257,14 @@ public class CommunityService : ICommunityService
         };
 
         community.CommunityUsers.Add(newSubscription);
-        user.Communities.Add(newSubscription.CommunityId);
+        user.Communities.Add(communityId);
         community.SubscribersCount++;
         await _dbContext.SaveChangesAsync();
     }
 
-    public async Task Unsubscribe(Guid communityId, String token)
+    public async Task Unsubscribe(Guid communityId, Guid userId)
     {
-        var user = await _tokenService.GetUser(token);
+        var user = await _tokenService.GetUser(userId);
 
         var community = await _dbContext.Communities
             .Include(c => c.CommunityUsers)
@@ -290,7 +285,7 @@ public class CommunityService : ICommunityService
         
         community.CommunityUsers.Remove(existingSubscription);
         community.SubscribersCount--;
-        user.Communities.Remove(existingSubscription.CommunityId);
+        user.Communities.Remove(communityId);
         await _dbContext.SaveChangesAsync();
     }
 
@@ -317,7 +312,7 @@ public class CommunityService : ICommunityService
         
         if (tags != null && tags.Any())
         {
-            filteredPosts = filteredPosts.Where(p => p.Tags.Any(t => tags.Contains(t)));
+            filteredPosts = filteredPosts.Where(p => p.Tags.Any(tags.Contains));
         }
         
         return filteredPosts;
@@ -338,26 +333,6 @@ public class CommunityService : ICommunityService
     private IQueryable<Post> Paginate(IQueryable<Post> posts, int page, int size)
     {
         return posts.Skip((page - 1) * size).Take(size);
-    }
-
-    private async Task<User?> GetUserOrNull(string? token)
-    {
-        var findToken = _dbContext.Tokens.FirstOrDefault(x =>
-            token == x.Token);
-
-        if (findToken == null)
-        {
-            return null;
-        }
-        
-        if (_tokenService.IsTokenFresh(findToken) == false)
-        {
-            return null;
-        }
-        
-        var user = _dbContext.Users.FirstOrDefault(u => u.Id == findToken.UserId);
-
-        return user;
     }
 }
 

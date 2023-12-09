@@ -22,6 +22,7 @@ public class Post
     [Required]
     public Int32 ReadingTime { get; set; }
     
+    [Url]
     public String Image { get; set; }
     
     [Required]
@@ -43,7 +44,7 @@ public class Post
     [Required]
     public Int32 CommentsCount { get; set; }
     
-    public List<Guid>? Tags { get; set; }
+    public List<Guid> Tags { get; set; }
     
     public List<Comment> Comments { get; set; }
 }

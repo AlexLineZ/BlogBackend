@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using BlogBackend.Validation;
 
 namespace BlogBackend.Models.DTO;
 
@@ -15,12 +16,13 @@ public class CreatePostDto
     [Required]
     public Int32 ReadingTime { get; set; }
     
+    [Url]
     public String Image { get; set; }
-
+    
+    [ValidAddressId]
     public Guid? AddressId { get; set; }
 
     [Required]
     [MinLength(1)]
-    
     public List<Guid> Tags { get; set; }
 }

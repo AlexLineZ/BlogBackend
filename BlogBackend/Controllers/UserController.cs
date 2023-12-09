@@ -2,6 +2,7 @@
 using BlogBackend.Models;
 using BlogBackend.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BlogBackend.Controllers;
@@ -22,7 +23,7 @@ public class UserController : ControllerBase
     {
         if (!ModelState.IsValid)
         {
-            return BadRequest();
+            return BadRequest(ModelState);
         }
 
         var response = await _userService.Register(model);
@@ -35,7 +36,7 @@ public class UserController : ControllerBase
     {
         if (!ModelState.IsValid)
         {
-            return BadRequest();
+            return BadRequest(ModelState);
         }
         
         var response = await _userService.Login(model);
@@ -44,45 +45,45 @@ public class UserController : ControllerBase
 
     [HttpPost]
     [Route("logout")]
+    [Authorize]
     public async Task<IActionResult> Logout()
     {
         var token = await HttpContext.GetTokenAsync("access_token");
         if (string.IsNullOrEmpty(token))
         {
-            throw new UnauthorizedAccessException();
+            throw new UnauthorizedAccessException("Unauthorized");
         }
+        
         await _userService.Logout(token);
         return Ok();
     }
 
     [HttpGet]
     [Route("profile")]
+    [Authorize]
     public async Task<IActionResult> GetProfile()
     {
-        var token = await HttpContext.GetTokenAsync("access_token");
-        if (string.IsNullOrEmpty(token))
-        {
-            throw new UnauthorizedAccessException();
-        }
-        var response = _userService.GetProfile(token);
+        var tokenUserId = User.Claims.FirstOrDefault(claim => claim.Type == "id")?.Value;
+        var userId = tokenUserId == null? Guid.Empty : Guid.Parse(tokenUserId);
+        
+        var response = _userService.GetProfile(userId);
         return Ok(response);
     }
     
     [HttpPut]
     [Route("profile")]
+    [Authorize]
     public async Task<IActionResult> PutProfile(UserEditModel model)
     {
         if (!ModelState.IsValid)
         {
-            return BadRequest();
+            return BadRequest(ModelState);
         }
         
-        var token = await HttpContext.GetTokenAsync("access_token");
-        if (string.IsNullOrEmpty(token))
-        {
-            throw new UnauthorizedAccessException();
-        }
-        await _userService.PutProfile(model, token);
+        var tokenUserId = User.Claims.FirstOrDefault(claim => claim.Type == "id")?.Value;
+        var userId = tokenUserId == null? Guid.Empty : Guid.Parse(tokenUserId);
+        
+        await _userService.PutProfile(model, userId);
         return Ok();
     }
 }

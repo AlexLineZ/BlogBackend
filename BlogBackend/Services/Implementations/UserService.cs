@@ -1,8 +1,9 @@
 ﻿using System.Security.Authentication;
+using System.Security.Cryptography;
+using System.Text;
 using BlogBackend.Data;
 using BlogBackend.Data.Models.User;
 using BlogBackend.Exceptions;
-using BlogBackend.Helpers;
 using BlogBackend.Models;
 using BlogBackend.Models.DTO;
 using BlogBackend.Services.Interfaces;
@@ -40,16 +41,15 @@ public class UserService: IUserService
             model.Gender,
             model.Email,
             model.PhoneNumber,
-            UserHelper.GenerateSHA256(model.Password),
+            GenerateSha256(model.Password),
             new List<Guid>(),
-            new List<Guid>(),
+            new List<Post>(),
             new List<Guid>()
             );
         
-        var token = _configuration.GenerateJwtToken(user);
+        var token = _tokenService.GenerateJwtToken(_configuration, user);
         
         await _dbContext.Users.AddAsync(user);
-        await _tokenService.AddOrEditToken(token, user);
         await _dbContext.SaveChangesAsync();
 
         return new TokenResponse(token);
@@ -57,87 +57,82 @@ public class UserService: IUserService
 
     public async Task<TokenResponse> Login([FromBody] LoginCredentials model)
     {
-        var user = _dbContext.Users.FirstOrDefault(x =>
-            x.Email == model.Email && x.Password == UserHelper.GenerateSHA256(model.Password));
+        var user = _dbContext.Users
+            .FirstOrDefault(x =>
+            x.Email == model.Email && x.Password == GenerateSha256(model.Password));
 
         if (user == null)
         {
             throw new InvalidCredentialException("Incorrect login or password");
         }
 
-        var token = _configuration.GenerateJwtToken(user);
-        await _tokenService.AddOrEditToken(token, user);
-        
+        var token = _tokenService.GenerateJwtToken(_configuration, user);
+
         return new TokenResponse(token);
     }
 
     public async Task Logout(String token)
     {
-        var findToken = _dbContext.Tokens.FirstOrDefault(x =>
+        var findToken = _dbContext.ExpiredTokens.FirstOrDefault(x =>
             x.Token == token);
-        if (findToken == null)
-        {
-            throw new UnauthorizedAccessException("Token not found");
-        }
-        _dbContext.Tokens.Remove(findToken);
-        await _dbContext.SaveChangesAsync();
-    }
-
-    public UserDto GetProfile(String token)
-    {
-        var findToken = _dbContext.Tokens.FirstOrDefault(x =>
-            token == x.Token);
         
         if (findToken != null)
         {
-            if (_tokenService.IsTokenFresh(findToken) == false)
-            {
-                throw new UnauthorizedAccessException("Token expired");
-            }
+            throw new UnauthorizedAccessException("User already logged out");
         }
+        
+        _dbContext.ExpiredTokens.Add(new ExpiredTokenStorage{Token = token});
+        await _dbContext.SaveChangesAsync();
+    }
 
+    public UserDto GetProfile(Guid userId)
+    {
+        if (userId == Guid.Empty)
+        {
+            throw new UnauthorizedAccessException("Unauthorized");
+        }
+        
         var user = _dbContext.Users.FirstOrDefault(x =>
-            findToken.UserId == x.Id);
+            userId == x.Id);
 
         if (user == null)
         {
             throw new ResourceNotFoundException("User not found");
         }
         
-        var userDTO = new UserDto(user.Id, user.CreateTime, user.FullName,
+        var userDtO = new UserDto(user.Id, user.CreateTime, user.FullName,
             user.BirthDate, user.Gender, user.Email, user.PhoneNumber);
 
-        return userDTO;
+        return userDtO;
     }
 
-    public async Task PutProfile(UserEditModel model, String token)
+    public async Task PutProfile(UserEditModel model, Guid userId)
     {
-        var findToken = _dbContext.Tokens.FirstOrDefault(x =>
-            token == x.Token);
-        
-        if (findToken != null)
+        if (userId == Guid.Empty)
         {
-            if (_tokenService.IsTokenFresh(findToken) == false)
-            {
-                throw new UnauthorizedAccessException("Token expired");
-            }
+            throw new UnauthorizedAccessException("Unauthorized");
         }
         
         var user = _dbContext.Users.FirstOrDefault(x =>
-            findToken.UserId == x.Id);
+            userId == x.Id);
 
         if (user == null)
         {
             throw new ResourceNotFoundException("User not found");
         }
-        else
-        {
-            user.FullName = model.FullName;
-            user.Email = model.Email;
-            user.BirthDate = model.BirthDate;
-            user.Gender = model.Gender;
-            user.PhoneNumber = model.PhoneNumber;
-        }
+        
+        user.FullName = model.FullName;
+        user.Email = model.Email;
+        user.BirthDate = model.BirthDate;
+        user.Gender = model.Gender;
+        user.PhoneNumber = model.PhoneNumber;
+        
         await _dbContext.SaveChangesAsync();
+    }
+    
+    private string GenerateSha256(string input)
+    {
+        using SHA256 hash = SHA256.Create();
+        return Convert.ToHexString(hash.ComputeHash(Encoding.UTF8.GetBytes(input)));
     }
 }

@@ -40,9 +40,9 @@ public class CommentService: ICommentService
         return commentTree;
     }
 
-    public async Task CreateComment(CreateCommentDto commentDto, Guid postId, string token)
+    public async Task CreateComment(CreateCommentDto commentDto, Guid postId, Guid userId)
     {
-        var user = await _tokenService.GetUser(token);
+        var user = await _tokenService.GetUser(userId);
 
         var post = await _dbContext.Posts.FindAsync(postId);
         if (post == null)
@@ -88,7 +88,7 @@ public class CommentService: ICommentService
     }
 
 
-    public async Task UpdateComment(Guid commentId, UpdateCommentDto comment, string token)
+    public async Task UpdateComment(Guid commentId, UpdateCommentDto comment, Guid userId)
     {
         var existingComment = await _dbContext.Comments
             .FirstOrDefaultAsync(c => c.Id == commentId);
@@ -98,7 +98,7 @@ public class CommentService: ICommentService
             throw new ResourceNotFoundException($"Comment with id: {commentId} not found");
         }
 
-        var user = await _tokenService.GetUser(token);
+        var user = await _tokenService.GetUser(userId);
 
         if (existingComment.AuthorId != user.Id)
         {
@@ -112,9 +112,9 @@ public class CommentService: ICommentService
         await _dbContext.SaveChangesAsync();
     }
 
-    public async Task DeleteComment(Guid commentId, string token)
+    public async Task DeleteComment(Guid commentId, Guid userId)
     {
-        var user = await _tokenService.GetUser(token);
+        var user = await _tokenService.GetUser(userId);
         
         var commentToDelete = await _dbContext.Comments
             .Include(c => c.SubCommentsList)
@@ -165,7 +165,7 @@ public class CommentService: ICommentService
 
         if (post == null)
         {
-            throw new ResourceNotFoundException($"Post with id: {postId} not found");;
+            throw new ResourceNotFoundException($"Post with id: {postId} not found");
         }
 
         if (post.CommunityId == null)
@@ -212,13 +212,10 @@ public class CommentService: ICommentService
             MapCommentToDto(comment)
         };
 
-        if (comment.SubCommentsList != null)
+        foreach (var subComment in comment.SubCommentsList)
         {
-            foreach (var subComment in comment.SubCommentsList)
-            {
-                var subCommentTree = BuildCommentTree(subComment.Id);
-                commentTree.AddRange(subCommentTree);
-            }
+            var subCommentTree = BuildCommentTree(subComment.Id);
+            commentTree.AddRange(subCommentTree);
         }
 
         return commentTree;
