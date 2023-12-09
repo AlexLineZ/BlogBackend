@@ -52,9 +52,22 @@ public static class AddressHelper
             15 => "Уровень дополнительных территорий",
             16 => "Уровень объектов на дополнительных территориях",
             17 => "Машиноместо",
-            _ => ""
+            _ => String.Empty
         };
         
+        return name;
+    }
+    
+    public static string GetHouseType(int? type)
+    {
+        var name = type switch
+        {
+            1 => "корпус",
+            2 => "строение",
+            3 => "сооружение",
+            4 => "литера",
+            _ => String.Empty
+        };
         return name;
     }
 }

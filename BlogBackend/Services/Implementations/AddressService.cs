@@ -37,7 +37,8 @@ public class AddressService : IAddressService
 
         if (query != null)
         {
-            addressList = addressList.Where(x => x.Text != null && x.Text.Contains(query)).ToList();
+            addressList = addressList
+                .Where(x => x.Text != null && x.Text.Contains(query)).ToList();
         }
 
         return addressList;
@@ -55,7 +56,7 @@ public class AddressService : IAddressService
             var searchHouseModel = new SearchAddressModel(
                 house.Objectid,
                 house.Objectguid,
-                house.Housenum ?? string.Empty,
+                GetHouseName(house),
                 GarAddressLevel.Building,
                 AddressHelper.GetAddressName(10)
             );
@@ -65,6 +66,7 @@ public class AddressService : IAddressService
                 .Where(x => x.Objectid == house.Objectid && x.Isactive == 1)
                 .FirstOrDefaultAsync();
 
+            if (houseHierarchy!= null) {}
             var parentGuid = _garDbContext.AsAddrObjs.FirstOrDefault(x =>
                 x.Objectid == houseHierarchy.Parentobjid && x.Isactive == 1 && x.Isactual == 1).Objectguid;
 
@@ -140,7 +142,7 @@ public class AddressService : IAddressService
                 var searchAddressModel = new SearchAddressModel(
                     address.Objectid,
                     address.Objectguid,
-                    address.Housenum ?? string.Empty,
+                    GetHouseName(address),
                     GarAddressLevel.Building,
                     AddressHelper.GetAddressName(10)
                 );
@@ -176,5 +178,29 @@ public class AddressService : IAddressService
                 AddressHelper.GetAddressName(Convert.ToInt32(address.Level))
             )
             : null;
+    }
+    
+    private string GetHouseName(AsHouse house)
+    {
+        var chainHouseNumber = new List<string>();
+
+        if (!string.IsNullOrEmpty(house.Housenum))
+        {
+            chainHouseNumber.Add(house.Housenum);
+        }
+
+        if (house.Addtype1 != null)
+        {
+            chainHouseNumber.Add(AddressHelper.GetHouseType(house.Addtype1));
+            chainHouseNumber.Add(house.Addnum1 ?? String.Empty);
+        }
+
+        if (house.Addtype2 != null)
+        {
+            chainHouseNumber.Add(AddressHelper.GetHouseType(house.Addtype2));
+            chainHouseNumber.Add(house.Addnum2 ?? String.Empty);
+        }
+
+        return string.Join(" ", chainHouseNumber).Trim();
     }
 }
