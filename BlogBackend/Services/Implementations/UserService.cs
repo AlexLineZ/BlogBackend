@@ -35,7 +35,7 @@ public class UserService: IUserService
         }
         
         var user = new User(
-            new Guid(),
+            Guid.NewGuid(),
             model.FullName,
             model.BirthDate,
             model.Gender,
@@ -119,6 +119,13 @@ public class UserService: IUserService
         if (user == null)
         {
             throw new ResourceNotFoundException("User not found");
+        }
+
+        var checkEmail = _dbContext.Users.Any(x => x.Email == user.Email);
+
+        if (checkEmail)
+        {
+            throw new InvalidCredentialException("This email is already use");
         }
         
         user.FullName = model.FullName;

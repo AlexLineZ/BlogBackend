@@ -159,7 +159,7 @@ public class CommunityService : ICommunityService
 
         User? user = await _tokenService.GetUserOrNull(userId);
 
-        var posts = community.Posts;
+        var posts = community.Posts.AsQueryable();
 
         var filteredPosts = ApplyFilters(posts, tags, user, community);
         filteredPosts = ApplySorting(filteredPosts, sorting);
@@ -289,10 +289,8 @@ public class CommunityService : ICommunityService
         await _dbContext.SaveChangesAsync();
     }
 
-    private IQueryable<Post> ApplyFilters(List<Post> posts, List<Guid>? tags, User? user, Community community)
+    private IQueryable<Post> ApplyFilters(IQueryable<Post> posts, List<Guid>? tags, User? user, Community community)
     {
-        var filteredPosts = posts.AsQueryable();
-
         if (user == null && community.IsClosed)
         {
             throw new ResourceNotAccessException($"User is not authenticated and " +
@@ -312,10 +310,10 @@ public class CommunityService : ICommunityService
         
         if (tags != null && tags.Any())
         {
-            filteredPosts = filteredPosts.Where(p => p.Tags.Any(tags.Contains));
+            posts = posts.Where(p => p.Tags.Any(tags.Contains));
         }
         
-        return filteredPosts;
+        return posts;
     }
     
     private IQueryable<Post> ApplySorting(IQueryable<Post> posts, PostSorting? sorting)
@@ -329,7 +327,7 @@ public class CommunityService : ICommunityService
             _ => posts,
         };
     }
-    
+
     private IQueryable<Post> Paginate(IQueryable<Post> posts, int page, int size)
     {
         return posts.Skip((page - 1) * size).Take(size);

@@ -213,38 +213,37 @@ public class PostService: IPostService
     private IQueryable<Post> ApplyFilters(IQueryable<Post> posts, List<Guid>? tags, string? author,
         int? minReadingTime, int? maxReadingTime, bool onlyMyCommunities, User? user)
     {
-        var filteredPosts = posts.AsQueryable();
-        
         if (tags != null && tags.Any())
         {
-            filteredPosts = filteredPosts.Where(p => p.Tags.Any(tags.Contains));
+            var tagList = tags.ToList();
+            posts = posts.Where(p => p.Tags.Any(t => tagList.Contains(t)));
         }
         
         if (!string.IsNullOrEmpty(author))
         {
-            filteredPosts = filteredPosts.Where(p => p.Author.Contains(author));
+            posts = posts.Where(p => p.Author.ToUpper().Contains(author.ToUpper()));
         }
-        
+
         if (minReadingTime.HasValue)
         {
-            filteredPosts = filteredPosts.Where(p => p.ReadingTime >= minReadingTime.Value);
+            posts = posts.Where(p => p.ReadingTime >= minReadingTime.Value);
         }
 
         if (maxReadingTime.HasValue)
         {
-            filteredPosts = filteredPosts.Where(p => p.ReadingTime <= maxReadingTime.Value);
+            posts = posts.Where(p => p.ReadingTime <= maxReadingTime.Value);
         }
         
         if (onlyMyCommunities && user != null)
         {
-            filteredPosts = filteredPosts
+            posts = posts
                 .Where(p => p.CommunityId != null
                                   && user.Communities.Any(c => c == p.CommunityId.Value));
         }
         
         if (onlyMyCommunities && user == null || user == null)
         {
-            filteredPosts = filteredPosts
+            posts = posts
                 .Where(post => !_dbContext.Communities
                     .Where(community => community.Id == post.CommunityId)
                     .Any(community => community.IsClosed)
@@ -253,7 +252,7 @@ public class PostService: IPostService
 
         if (!onlyMyCommunities && user != null)
         {
-            filteredPosts = filteredPosts
+            posts = posts
                 .Where(post =>
                     !_dbContext.Communities
                         .Where(community => community.Id == post.CommunityId)
@@ -261,7 +260,7 @@ public class PostService: IPostService
                 );
         }
 
-        return filteredPosts;
+        return posts;
     }
 
     private IQueryable<Post> ApplySorting(IQueryable<Post> posts, PostSorting? sorting)

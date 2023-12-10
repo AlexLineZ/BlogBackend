@@ -19,30 +19,33 @@ public class AddressService : IAddressService
 
     public async Task<List<SearchAddressModel>> Search(Int64 parentObjectId, string? query)
     {
-        var hierarchyList = await _garDbContext.AsAdmHierarchies
+        var hierarchyList = _garDbContext.AsAdmHierarchies
             .Where(x => x.Parentobjid == parentObjectId && x.Isactive == 1)
-            .ToListAsync();
+            .AsQueryable();
 
         var addressList = new List<SearchAddressModel>();
 
         if (!hierarchyList.IsNullOrEmpty())
         {
-            addressList = await FindChildInAddrObj(hierarchyList);
+            addressList = FindChildInAddrObj(hierarchyList);
 
             if (addressList.IsNullOrEmpty())
             {
-                addressList = await FindChildInHouses(hierarchyList);
+                addressList = FindChildInHouses(hierarchyList);
             }
         }
 
         if (query != null)
         {
             addressList = addressList
-                .Where(x => x.Text != null && x.Text.Contains(query)).ToList();
+                .Where(x => x.Text != null 
+                            && x.Text.ToUpper().Contains(query.ToUpper()))
+                .ToList();
         }
 
         return addressList;
     }
+
 
     public async Task<List<SearchAddressModel>> Chain(Guid objectGuid)
     {
@@ -100,59 +103,44 @@ public class AddressService : IAddressService
         return addressList;
     }
 
-    private async Task<List<SearchAddressModel>> FindChildInAddrObj(List<AsAdmHierarchy> hierarchyList)
+    private List<SearchAddressModel> FindChildInAddrObj(IQueryable<AsAdmHierarchy> hierarchyList)
     {
-        var addressList = new List<SearchAddressModel>();
-
-        foreach (var hierarchyItem in hierarchyList)
-        {
-            var address = await _garDbContext.AsAddrObjs
-                .Where(a => a.Objectid == hierarchyItem.Objectid && a.Isactive == 1 && a.Isactual == 1)
-                .FirstOrDefaultAsync();
-
-            if (address != null)
+        var addressQuery = 
+            from hierarchyItem in hierarchyList
+            join address in _garDbContext.AsAddrObjs
+                on hierarchyItem.Objectid equals address.Objectid
+            where address.Isactive == 1 && address.Isactual == 1
+            select new SearchAddressModel
             {
-                var searchAddressModel = new SearchAddressModel(
-                    address.Objectid,
-                    address.Objectguid,
-                    address.Typename + " " + address.Name,
-                    AddressHelper.GetGarAddressLevel(Convert.ToInt32(address.Level)),
-                    AddressHelper.GetAddressName(Convert.ToInt32(address.Level))
-                );
+                ObjectId = address.Objectid,
+                ObjectGuid = address.Objectguid,
+                Text = $"{address.Typename} {address.Name}",
+                ObjectLevel = AddressHelper.GetGarAddressLevel(Convert.ToInt32(address.Level)),
+                ObjectLevelText = AddressHelper.GetAddressName(Convert.ToInt32(address.Level))
+            };
 
-                addressList.Add(searchAddressModel);
-            }
-        }
-
-        return addressList;
+        return addressQuery.ToList();
     }
 
-    private async Task<List<SearchAddressModel>> FindChildInHouses(List<AsAdmHierarchy> hierarchyList)
+    private List<SearchAddressModel> FindChildInHouses(IQueryable<AsAdmHierarchy> hierarchyList)
     {
-        var addressList = new List<SearchAddressModel>();
-
-        foreach (var hierarchyItem in hierarchyList)
-        {
-            var address = await _garDbContext.AsHouses
-                .Where(a => a.Objectid == hierarchyItem.Objectid && a.Isactive == 1 && a.Isactual == 1)
-                .FirstOrDefaultAsync();
-
-            if (address != null)
+        var addressQuery = 
+            from hierarchyItem in hierarchyList
+            join address in _garDbContext.AsHouses
+                on hierarchyItem.Objectid equals address.Objectid
+            where address.Isactive == 1 && address.Isactual == 1
+            select new SearchAddressModel
             {
-                var searchAddressModel = new SearchAddressModel(
-                    address.Objectid,
-                    address.Objectguid,
-                    GetHouseName(address),
-                    GarAddressLevel.Building,
-                    AddressHelper.GetAddressName(10)
-                );
+                ObjectId = address.Objectid,
+                ObjectGuid = address.Objectguid,
+                Text = GetHouseName(address),
+                ObjectLevel = GarAddressLevel.Building,
+                ObjectLevelText = AddressHelper.GetAddressName(10)
+            };
 
-                addressList.Add(searchAddressModel);
-            }
-        }
-
-        return addressList;
+        return addressQuery.ToList();
     }
+
 
     private async Task<SearchAddressModel?> FindParentInAddrObjOneObject(long? objectId)
     {
@@ -180,7 +168,7 @@ public class AddressService : IAddressService
             : null;
     }
     
-    private string GetHouseName(AsHouse house)
+    private static string GetHouseName(AsHouse house)
     {
         var chainHouseNumber = new List<String>();
 
