@@ -118,6 +118,11 @@ public class PostService: IPostService
         
         var hasLike = user != null && user.Likes.Contains(postId);
 
+        if (post.CommunityId != null)
+        {
+            IsPostAvailable(post.CommunityId.Value, user);
+        }
+        
         var comments = post.Comments
             .Where(c => c.ParentId == null)
             .Select(comment => new CommentDto
@@ -175,6 +180,11 @@ public class PostService: IPostService
             throw new ResourceNotFoundException($"Post with id: {postId} not found");
         }
         
+        if (post.CommunityId != null)
+        {
+            IsPostAvailable(post.CommunityId.Value, user);
+        }
+        
         var existingLike = user.Likes.Any(l => l == postId);
         
         if (existingLike)
@@ -196,6 +206,11 @@ public class PostService: IPostService
         if (post == null)
         {
             throw new ResourceNotFoundException($"Post with id: {postId} not found");
+        }
+        
+        if (post.CommunityId != null)
+        {
+            IsPostAvailable(post.CommunityId.Value, user);
         }
         
         var existingLike = user.Likes.Any(l => l == postId);
@@ -300,5 +315,34 @@ public class PostService: IPostService
         }
         
         return commentTree;
+    }
+
+    private Boolean IsPostAvailable(Guid communityId, User? user)
+    {
+        if (user == null)
+        {
+            throw new ResourceNotAccessException($"Community with id: {communityId} is closed");
+        }
+        
+        var community = _dbContext.Communities
+            .Include(c => c.CommunityUsers)
+            .FirstOrDefault(p => p.Id == communityId);
+
+        if (community == null)
+        {
+            throw new ResourceNotFoundException($"Community with id: {communityId} not found");
+        }
+        
+        if (community.IsClosed)
+        {
+            var isUserSubscribed =  community.CommunityUsers.Any(c => c.UserId == user.Id);
+            if (!isUserSubscribed)
+            {
+                throw new ResourceNotAccessException($"User is not subscribed " +
+                                                     $"to community with id: {communityId}");
+            }
+        }
+
+        return true;
     }
 }

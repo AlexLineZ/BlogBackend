@@ -50,6 +50,11 @@ public class CommentService: ICommentService
             throw new ResourceNotFoundException($"Post with id: {postId} not found");
         }
 
+        if (post.CommunityId != null)
+        {
+            IsPostAvailable(post.CommunityId.Value, user);
+        }
+
         var newComment = new Comment
         {
             Id = Guid.NewGuid(),
@@ -194,7 +199,6 @@ public class CommentService: ICommentService
 
         return true;
     }
-
     
     private List<CommentDto> BuildCommentTree(Guid commentId)
     {
@@ -235,5 +239,34 @@ public class CommentService: ICommentService
             Author = comment.Author,
             SubComments = comment.SubComments
         };
+    }
+    
+    private Boolean IsPostAvailable(Guid communityId, User? user)
+    {
+        if (user == null)
+        {
+            throw new ResourceNotAccessException($"Community with id: {communityId} is closed");
+        }
+        
+        var community = _dbContext.Communities
+            .Include(c => c.CommunityUsers)
+            .FirstOrDefault(p => p.Id == communityId);
+
+        if (community == null)
+        {
+            throw new ResourceNotFoundException($"Community with id: {communityId} not found");
+        }
+        
+        if (community.IsClosed)
+        {
+            var isUserSubscribed =  community.CommunityUsers.Any(c => c.UserId == user.Id);
+            if (!isUserSubscribed)
+            {
+                throw new ResourceNotAccessException($"User is not subscribed " +
+                                                     $"to community with id: {communityId}");
+            }
+        }
+
+        return true;
     }
 }
