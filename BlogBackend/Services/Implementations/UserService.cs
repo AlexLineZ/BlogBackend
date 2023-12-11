@@ -127,6 +127,13 @@ public class UserService: IUserService
         {
             throw new InvalidCredentialException("This email is already use");
         }
+
+        var checkPhoneNumber = _dbContext.Users.Any(x => x.PhoneNumber == user.PhoneNumber);
+        
+        if (checkPhoneNumber)
+        {
+            throw new InvalidCredentialException("This phoneNumber is already use");
+        }
         
         user.FullName = model.FullName;
         user.Email = model.Email;

@@ -8,6 +8,11 @@ public class ValidAddressIdAttribute : ValidationAttribute
 {
     protected override ValidationResult IsValid(object value, ValidationContext validationContext)
     {
+        if (value == null)
+        {
+            return ValidationResult.Success;
+        }
+        
         var serviceProvider = validationContext.GetRequiredService<IServiceProvider>();
         var dbContext = serviceProvider.GetRequiredService<Gar70Context>();
         

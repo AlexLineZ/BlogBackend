@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using BlogBackend.Data.Models.User;
+using BlogBackend.Validation;
 
 namespace BlogBackend.Models;
 
@@ -17,7 +18,8 @@ public class UserRegisterModel
     [EmailAddress]
     public String Email { get; set; }
     
-    public DateTime BirthDate { get; set; }
+    [BirthDateValidation]
+    public DateTime? BirthDate { get; set; }
     
     [Required]
     public Gender Gender { get; set; }

@@ -38,7 +38,7 @@ public class User
     public List<Guid> Likes { get; set; }
 
     public User() { }
-    public User(Guid id, string fullName, DateTime birthDate, 
+    public User(Guid id, string fullName, DateTime? birthDate, 
         Gender gender, string email, string phoneNumber, string password,
         List<Guid> communities, List<Post> posts, List<Guid> likes)
     {
