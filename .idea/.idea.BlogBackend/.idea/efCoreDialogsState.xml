@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="EfCoreDialogsState">
+    <option name="keyValueStorage">
+      <map>
+        <entry key="Common:buildConfiguration" value="Debug" />
+        <entry key="Common:c2dc36c8-7a79-47fd-96b3-de786346ffe5:dbContext" value="BlogBackend.Data.AppDbContext" />
+        <entry key="Common:noBuild" value="false" />
+        <entry key="Common:outputFolder" value="Migrations" />
+      </map>
+    </option>
+  </component>
+</project>
