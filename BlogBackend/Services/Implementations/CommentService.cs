@@ -111,6 +111,11 @@ public class CommentService: ICommentService
                                                   $"to update comment with id: {commentId}");
         }
 
+        if (existingComment.DeleteDate != null)
+        {
+            throw new ResourceNotFoundException($"Comment with id: {commentId} was deleted");
+        }
+
         existingComment.Content = comment.Content;
         existingComment.ModifiedDate = DateTime.UtcNow;
 
