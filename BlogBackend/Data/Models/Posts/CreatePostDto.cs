@@ -14,6 +14,7 @@ public class CreatePostDto
     public String Description { get; set; }
 
     [Required]
+    [Range(0, int.MaxValue, ErrorMessage = "ReadingTime must be positive")]
     public Int32 ReadingTime { get; set; }
     
     [Url]

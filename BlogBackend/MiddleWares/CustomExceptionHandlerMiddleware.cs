@@ -73,6 +73,14 @@ public class CustomExceptionHandlerMiddleware
                     Message = e.Message
                 });
                 break;
+            case ArgumentOutOfRangeException:
+                code = HttpStatusCode.BadRequest;
+                result = JsonSerializer.Serialize(new MessageResponse
+                {
+                    Status = ((int)code).ToString(),
+                    Message = e.Message
+                });
+                break;
             default:
                 code = HttpStatusCode.InternalServerError;
                 result = JsonSerializer.Serialize(new MessageResponse
