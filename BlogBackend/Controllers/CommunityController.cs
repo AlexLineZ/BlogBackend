@@ -86,7 +86,8 @@ public class CommunityController: ControllerBase
         var userId = tokenUserId == null? Guid.Empty : Guid.Parse(tokenUserId);
         
         var userRole = await _communityService.GetUserRole(id, userId);
-        return Ok(userRole);
+        
+        return userRole != null ? Ok(userRole) : Ok("null");
     }
     
     [HttpPost]

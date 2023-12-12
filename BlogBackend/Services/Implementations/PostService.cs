@@ -6,6 +6,7 @@ using BlogBackend.Models.Comments;
 using BlogBackend.Models.DTO;
 using BlogBackend.Models.Posts;
 using BlogBackend.Services.Interfaces;
+using BlogBackend.Validation;
 using Microsoft.EntityFrameworkCore;
 
 namespace BlogBackend.Services.Implementations;
@@ -24,6 +25,7 @@ public class PostService: IPostService
     public async Task<PostGroup> GetPostList(List<Guid>? tags, string? author, int? min, int? max,
         PostSorting? sorting, bool onlyMyCommunities, int page, int size, Guid? userId)
     {
+        QueryValidator.CheckValidDataPost(page, size, min, max);
         User? user = await _tokenService.GetUserOrNull(userId);
 
         var posts = _dbContext.Posts

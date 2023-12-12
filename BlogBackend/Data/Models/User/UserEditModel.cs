@@ -19,6 +19,7 @@ public class UserEditModel
     [Required]
     public Gender Gender { get; set; }
     
-    [RegularExpression("^\\+7 \\(\\d{3}\\) \\d{3}-\\d{2}-\\d{2}$")]
+    [RegularExpression("^\\+7 \\(\\d{3}\\) \\d{3}-\\d{2}-\\d{2}$",
+        ErrorMessage = "PhoneNumber is not valid")]
     public String PhoneNumber { get; set; }
 }

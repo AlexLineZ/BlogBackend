@@ -4,6 +4,7 @@ using BlogBackend.Models;
 using BlogBackend.Models.DTO;
 using BlogBackend.Models.Posts;
 using BlogBackend.Services.Interfaces;
+using BlogBackend.Validation;
 using Microsoft.EntityFrameworkCore;
 
 namespace BlogBackend.Services.Implementations;
@@ -148,6 +149,8 @@ public class CommunityService : ICommunityService
     public async Task<PostGroup> GetCommunityPost(Guid communityId, List<Guid>? tags,
         PostSorting? sorting, Int32 page, Int32 size, Guid userId)
     {
+        QueryValidator.CheckValidDataCommunity(page, size);
+        
         var community = await _dbContext.Communities
             .Include(c => c.Posts)
             .FirstOrDefaultAsync(c => c.Id == communityId);
