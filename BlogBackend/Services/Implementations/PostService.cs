@@ -80,6 +80,11 @@ public class PostService: IPostService
     public async Task<Guid> CreatePost(CreatePostDto post, Guid userId)
     {
         var user = await _tokenService.GetUser(userId);
+
+        if (!await TagsExist(post.Tags))
+        {
+            throw new ResourceNotFoundException("One or more tags do not exist");
+        }
         
         var newPost = new Post {
             Id = Guid.NewGuid(),
@@ -346,5 +351,14 @@ public class PostService: IPostService
         }
 
         return true;
+    }
+    
+    private async Task<bool> TagsExist(List<Guid> tagIds)
+    {
+        var existingTags = await _dbContext.Tags
+            .Where(tag => tagIds.Contains(tag.Id))
+            .ToListAsync();
+
+        return existingTags.Count == tagIds.Count;
     }
 }
