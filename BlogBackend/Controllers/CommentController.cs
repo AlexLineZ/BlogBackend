@@ -21,7 +21,10 @@ public class CommentController: ControllerBase
     [Route("comment/{id}/tree")]
     public async Task<IActionResult> GetCommentTree(Guid id)
     {
-        var comment = await _commentService.GetCommentsTree(id);
+        var tokenUserId = User.Claims.FirstOrDefault(claim => claim.Type == "id")?.Value;
+        var userId = tokenUserId == null? Guid.Empty : Guid.Parse(tokenUserId);
+        
+        var comment = await _commentService.GetCommentsTree(id, userId);
         return Ok(comment);
     }
     
@@ -38,8 +41,8 @@ public class CommentController: ControllerBase
         var tokenUserId = User.Claims.FirstOrDefault(claim => claim.Type == "id")?.Value;
         var userId = tokenUserId == null? Guid.Empty : Guid.Parse(tokenUserId);
         
-        await _commentService.CreateComment(comment, id, userId);
-        return Ok();
+        var commentId = await _commentService.CreateComment(comment, id, userId);
+        return Ok(commentId);
     }
 
     [HttpPut]

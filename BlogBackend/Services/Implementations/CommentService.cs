@@ -18,8 +18,10 @@ public class CommentService: ICommentService
         _tokenService = tokenService;
     }
 
-    public async Task<List<CommentDto>> GetCommentsTree(Guid commentId)
+    public async Task<List<CommentDto>> GetCommentsTree(Guid commentId, Guid userId)
     {
+        var user = await _tokenService.GetUserOrNull(userId);
+        
         var rootComment = await _dbContext.Comments
             .Include(c => c.SubCommentsList)
             .FirstOrDefaultAsync(c => c.Id == commentId);
@@ -34,13 +36,15 @@ public class CommentService: ICommentService
             throw new InvalidOperationException($"Comment with id: {commentId} is not a root comment");
         }
 
+        await IsCommentAvailable(rootComment.PostId, user);
+            
         var commentTree = BuildCommentTree(rootComment.Id);
 
         commentTree.RemoveAt(0);
         return commentTree;
     }
 
-    public async Task CreateComment(CreateCommentDto commentDto, Guid postId, Guid userId)
+    public async Task<Guid> CreateComment(CreateCommentDto commentDto, Guid postId, Guid userId)
     {
         var user = await _tokenService.GetUser(userId);
 
@@ -90,6 +94,8 @@ public class CommentService: ICommentService
 
         post.CommentsCount++;
         await _dbContext.SaveChangesAsync();
+
+        return newComment.Id;
     }
 
 
@@ -273,5 +279,27 @@ public class CommentService: ICommentService
         }
 
         return true;
+    }
+
+    private async Task<Boolean> IsCommentAvailable(Guid postId, User? user)
+    {
+        var post = await _dbContext.Posts.FindAsync(postId);
+
+        if (post == null)
+        {
+            throw new ResourceNotFoundException($"Post with id: {postId} not found");
+        }
+
+        if (post.CommunityId == null)
+        {
+            return true;
+        }
+
+        if (IsPostAvailable(post.CommunityId.Value, user))
+        {
+            return true;
+        }
+
+        return false;
     }
 }
