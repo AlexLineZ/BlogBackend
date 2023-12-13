@@ -67,7 +67,7 @@ public class PostService: IPostService
                     CommunityName = post.CommunityName,
                     AddressId = post.AddressId,
                     Likes = post.Likes,
-                    HasLike = user != null && user.Posts.Contains(post),
+                    HasLike = user != null && user.Likes.Any(like => like == post.Id),
                     CommentsCount = post.Comments.Count,
                     Tags = _dbContext.Tags
                         .Where(tag => post.Tags.Contains(tag.Id))
