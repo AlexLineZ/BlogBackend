@@ -10,7 +10,8 @@ public class UserEditModel
     public String FullName { get; set; }
 
     [Required]
-    [EmailAddress]
+    [RegularExpression("[a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\\.[a-zA-Z0-9_-]+",
+        ErrorMessage = "Invalid email address")]
     public String Email { get; set; }
     
     [BirthDateValidation]

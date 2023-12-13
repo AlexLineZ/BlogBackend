@@ -21,7 +21,8 @@ public class User
     public Gender Gender { get; set; } 
     
     [Required]
-    [EmailAddress]
+    [RegularExpression("[a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\\.[a-zA-Z0-9_-]+",
+        ErrorMessage = "Invalid email address")]
     public String Email { get; set; }
     
     [RegularExpression("^\\+7 \\(\\d{3}\\) \\d{3}-\\d{2}-\\d{2}$",
