@@ -173,6 +173,13 @@ public class CommunityService : ICommunityService
         filteredPosts = ApplySorting(filteredPosts, sorting);
         var paginatedPosts = Paginate(filteredPosts, page, size);
         
+        var pagesCount = (int)Math.Ceiling((double)await posts.CountAsync() / size);
+
+        if (pagesCount < page)
+        {
+            throw new InvalidOperationException("Invalid number of page");
+        }
+        
         var postGroup = new PostGroup
         {
             Posts = paginatedPosts.Select(post => new PostDto
@@ -203,7 +210,7 @@ public class CommunityService : ICommunityService
             }).ToList(),
                 
             Pagination = new PageInfoModel 
-                { Count = (int)Math.Ceiling((double)filteredPosts.Count() / size), Size = size, Current = page},
+                { Count = pagesCount, Size = size, Current = page},
         };
         
         return postGroup;

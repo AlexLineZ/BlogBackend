@@ -121,18 +121,18 @@ public class UserService: IUserService
             throw new ResourceNotFoundException("User not found");
         }
 
-        var checkEmail = _dbContext.Users.Any(x => x.Email == user.Email);
+        var checkEmail = _dbContext.Users.Any(x => x.Email == model.Email && x.Id != userId);
 
         if (checkEmail)
         {
-            throw new InvalidCredentialException("This email is already use");
+            throw new InvalidCredentialException("This email is already use by another user");
         }
 
-        var checkPhoneNumber = _dbContext.Users.Any(x => x.PhoneNumber == user.PhoneNumber);
+        var checkPhoneNumber = _dbContext.Users.Any(x => x.PhoneNumber == model.PhoneNumber && x.Id != userId);
         
         if (checkPhoneNumber)
         {
-            throw new InvalidCredentialException("This phoneNumber is already use");
+            throw new InvalidCredentialException("This phoneNumber is already use by another user");
         }
         
         user.FullName = model.FullName;
