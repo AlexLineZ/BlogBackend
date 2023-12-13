@@ -154,6 +154,8 @@ public class CommunityService : ICommunityService
     public async Task<PostGroup> GetCommunityPost(Guid communityId, List<Guid>? tags,
         PostSorting? sorting, Int32 page, Int32 size, Guid userId)
     {
+        QueryValidator.CheckValidDataCommunity(page, size);
+        
         var community = await _dbContext.Communities
             .Include(c => c.Posts)
             .FirstOrDefaultAsync(c => c.Id == communityId);
@@ -172,6 +174,11 @@ public class CommunityService : ICommunityService
         var paginatedPosts = Paginate(filteredPosts, page, size);
         
         var pagesCount = (int)Math.Ceiling((double)posts.Count() / size);
+        
+        if (pagesCount == 0)
+        {
+            pagesCount = 1;
+        }
 
         if (pagesCount < page)
         {

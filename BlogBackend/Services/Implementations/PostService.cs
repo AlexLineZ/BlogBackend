@@ -40,6 +40,11 @@ public class PostService: IPostService
 
         var pagesCount = (int)Math.Ceiling((double)posts.Count() / size);
 
+        if (pagesCount == 0)
+        {
+            pagesCount = 1;
+        }
+
         if (pagesCount < page)
         {
             throw new InvalidOperationException("Invalid number of page");
