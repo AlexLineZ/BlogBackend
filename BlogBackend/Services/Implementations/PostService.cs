@@ -38,6 +38,13 @@ public class PostService: IPostService
 
         var paginatedPosts = Paginate(posts, page, size);
 
+        var pagesCount = (int)Math.Ceiling((double)await posts.CountAsync() / size);
+
+        if (pagesCount < page)
+        {
+            throw new InvalidOperationException("Invalid number of page");
+        }
+        
         var postGroup = new PostGroup
         {
             Posts = await paginatedPosts
@@ -70,7 +77,7 @@ public class PostService: IPostService
                 .ToListAsync(),
                 
             Pagination = new PageInfoModel
-                { Count = (int)Math.Ceiling((double)await posts.CountAsync() / size), Size = size, Current = page },
+                { Count = pagesCount, Size = size, Current = page },
         };
 
         return postGroup;
