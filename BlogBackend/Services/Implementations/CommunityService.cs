@@ -122,6 +122,11 @@ public class CommunityService : ICommunityService
                                                  $"of community with id: {communityId}");
         }
         
+        if (!await TagsExist(post.Tags))
+        {
+            throw new ResourceNotFoundException("One or more tags do not exist");
+        }
+        
         var newPost = new Post {
             Id = Guid.NewGuid(),
             CreateTime = DateTime.UtcNow, 
@@ -334,6 +339,15 @@ public class CommunityService : ICommunityService
     private IQueryable<Post> Paginate(IQueryable<Post> posts, int page, int size)
     {
         return posts.Skip((page - 1) * size).Take(size);
+    }
+    
+    private async Task<bool> TagsExist(List<Guid> tagIds)
+    {
+        var existingTags = await _dbContext.Tags
+            .Where(tag => tagIds.Contains(tag.Id))
+            .ToListAsync();
+
+        return existingTags.Count == tagIds.Count;
     }
 }
 

@@ -11,11 +11,13 @@ public class UserRegisterModel
     public String FullName { get; set; }
     
     [Required]
-    [MinLength(6)]
+    [RegularExpression("^(?=.*\\d).{6,}$",
+        ErrorMessage = "Password must be at least 6 letters and have at least 1 digit")]
     public String Password { get; set; }
     
     [Required]
-    [EmailAddress]
+    [RegularExpression("[a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\\.[a-zA-Z0-9_-]+",
+        ErrorMessage = "Invalid email address")]
     public String Email { get; set; }
     
     [BirthDateValidation]

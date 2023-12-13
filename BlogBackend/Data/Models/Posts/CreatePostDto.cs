@@ -24,6 +24,6 @@ public class CreatePostDto
     public Guid? AddressId { get; set; }
 
     [Required]
-    [MinLength(1)]
+    [MinLength(1, ErrorMessage = "There must be at least 1 tag")]
     public List<Guid> Tags { get; set; }
 }
