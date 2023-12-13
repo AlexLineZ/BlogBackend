@@ -38,7 +38,7 @@ public class PostService: IPostService
 
         var paginatedPosts = Paginate(posts, page, size);
 
-        var pagesCount = (int)Math.Ceiling((double)await posts.CountAsync() / size);
+        var pagesCount = (int)Math.Ceiling((double)posts.Count() / size);
 
         if (pagesCount < page)
         {
